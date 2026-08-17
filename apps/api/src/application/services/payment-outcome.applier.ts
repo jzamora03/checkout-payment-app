@@ -59,12 +59,9 @@ export class PaymentOutcomeApplier {
       return ok(transaction);
     }
 
-    const approved = transaction.markApproved(gatewayResult.statusMessage);
-    const saved = await this.transactionRepository.update(approved);
-
-    const product = await this.productRepository.findById(saved.productId);
+    const product = await this.productRepository.findById(transaction.productId);
     if (!product) {
-      const failed = saved.markError('Producto no encontrado al finalizar el pago');
+      const failed = transaction.markError('Producto no encontrado al finalizar el pago');
       await this.transactionRepository.update(failed);
       return err(new PaymentProcessingError('Producto no encontrado al finalizar el pago'));
     }
@@ -75,10 +72,13 @@ export class PaymentOutcomeApplier {
       1,
     );
     if (!decremented) {
-      const failed = saved.markError('Sin stock disponible para completar la compra');
+      const failed = transaction.markError('Sin stock disponible para completar la compra');
       await this.transactionRepository.update(failed);
       return err(new PaymentProcessingError('Sin stock disponible para completar la compra'));
     }
+
+    const approved = transaction.markApproved(gatewayResult.statusMessage);
+    const saved = await this.transactionRepository.update(approved);
 
     if (saved.deliveryId) {
       const delivery = await this.deliveryRepository.assignTransaction(

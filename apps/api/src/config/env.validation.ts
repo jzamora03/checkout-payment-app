@@ -31,7 +31,7 @@ export class EnvironmentVariables {
   @MinLength(10)
   DATABASE_URL: string;
 
-  @IsUrl({ require_tld: false })
+  @IsUrl({ require_protocol: true, require_tld: false })
   PAYMENT_API_URL: string;
 
   @IsString()
@@ -63,7 +63,7 @@ export class EnvironmentVariables {
   @Min(0)
   DELIVERY_FEE_CENTS: number;
 
-  @IsUrl({ require_tld: false })
+  @IsUrl({ require_protocol: true, require_tld: false })
   @IsOptional()
   APP_URL?: string;
 

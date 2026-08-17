@@ -78,6 +78,9 @@ function delay(ms: number): Promise<void> {
 export class CreateCheckoutTransactionUseCase {
   private readonly maxPollingAttempts: number;
   private readonly pollingIntervalMs: number;
+  private readonly baseFeeCents: number;
+  private readonly deliveryFeeCents: number;
+  private readonly integrityKey: string;
 
   constructor(
     private readonly productRepository: ProductRepositoryPort,
@@ -92,6 +95,9 @@ export class CreateCheckoutTransactionUseCase {
       configService.get<number>('PAYMENT_POLL_ATTEMPTS') ?? DEFAULT_MAX_POLLING_ATTEMPTS;
     this.pollingIntervalMs =
       configService.get<number>('PAYMENT_POLL_INTERVAL_MS') ?? DEFAULT_POLLING_INTERVAL_MS;
+    this.baseFeeCents = this.nonNegativeInt(configService, 'BASE_FEE_CENTS');
+    this.deliveryFeeCents = this.nonNegativeInt(configService, 'DELIVERY_FEE_CENTS');
+    this.integrityKey = configService.get<string>('PAYMENT_INTEGRITY_KEY') ?? '';
   }
 
   async execute(
@@ -107,8 +113,8 @@ export class CreateCheckoutTransactionUseCase {
       );
     }
 
-    const baseFee = this.feeCents('BASE_FEE_CENTS');
-    const deliveryFee = this.feeCents('DELIVERY_FEE_CENTS');
+    const baseFee = this.baseFeeCents;
+    const deliveryFee = this.deliveryFeeCents;
     const pricing = OrderPricing.build(product.priceInCents, baseFee, deliveryFee);
     if (pricing.isErr()) {
       return err(new PaymentProcessingError(pricing.error.message));
@@ -152,7 +158,7 @@ export class CreateCheckoutTransactionUseCase {
       reference,
       pricing.value.totalInCents,
       product.currency,
-      this.integrityKey(),
+      this.integrityKey,
     );
 
     const gatewayResult = await this.paymentGateway.createTransaction({
@@ -180,22 +186,9 @@ export class CreateCheckoutTransactionUseCase {
     return this.resolveOutcome(transaction, gatewayResult.value);
   }
 
-  private feeCents(envKey: string): number {
-    const value = this.numberEnv(envKey);
-    return Number.isFinite(value) ? value : 0;
-  }
-
-  private numberEnv(envKey: string): number {
-    const raw = process.env[envKey];
-    return raw === undefined ? NaN : Number(raw);
-  }
-
-  private integrityKey(): string {
-    return this.stringEnv('PAYMENT_INTEGRITY_KEY');
-  }
-
-  private stringEnv(envKey: string): string {
-    return process.env[envKey] ?? '';
+  private nonNegativeInt(configService: ConfigService, key: string): number {
+    const value = configService.get<number>(key);
+    return typeof value === 'number' && Number.isFinite(value) && value >= 0 ? value : 0;
   }
 
   private async resolveOutcome(
