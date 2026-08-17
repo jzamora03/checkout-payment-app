@@ -34,3 +34,4 @@ apps/api/prisma/*.db-journal
 cdk.out/
 infra/cdk.out/
 infra/build/
+infra/cdk.context.json
