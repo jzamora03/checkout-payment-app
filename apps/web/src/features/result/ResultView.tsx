@@ -1,4 +1,12 @@
 import { useDispatch, useSelector } from 'react-redux';
+import Box from '@mui/material/Box';
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import Alert from '@mui/material/Alert';
+import CircularProgress from '@mui/material/CircularProgress';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CancelIcon from '@mui/icons-material/Cancel';
 import type { AppDispatch, RootState } from '../../app/store';
 import { goToProduct, resetCheckout } from '../checkout/checkoutSlice';
 import { formatCurrency } from '../../utils/format';
@@ -44,63 +52,95 @@ function ResultView() {
   const isProcessing = checkout.processing || !checkout.transactionStatus;
 
   return (
-    <div className="overlay" role="dialog" aria-modal="true" aria-label="Resultado del pago">
-      <div className={`result ${isProcessing ? 'result--processing' : ''}`}>
+    <Box
+      sx={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 60,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        bgcolor: 'rgba(15, 23, 42, 0.65)',
+        p: 2.5,
+      }}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Resultado del pago"
+    >
+      <Paper
+        elevation={0}
+        sx={{ width: '100%', maxWidth: 400, p: 3, textAlign: 'center', borderRadius: '18px' }}
+      >
         {isProcessing ? (
           <>
-            <div className="spinner" aria-hidden="true" />
-            <h2 className="result__title">{getHeading()}</h2>
-            <p className="result__message">{getMessage()}</p>
+            <CircularProgress size={44} sx={{ mb: 2 }} />
+            <Typography variant="h5">{getHeading()}</Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+              {getMessage()}
+            </Typography>
           </>
         ) : (
           <>
-            <div
-              className={`result__icon result__icon--${checkout.transactionStatus?.toLowerCase()}`}
-              aria-hidden="true"
-            >
-              {checkout.transactionStatus === 'APPROVED' ? '✓' : '✕'}
-            </div>
-            <h2 className="result__title">{getHeading()}</h2>
-            <p className="result__message">{getMessage()}</p>
+            {checkout.transactionStatus === 'APPROVED' ? (
+              <CheckCircleIcon color="success" sx={{ fontSize: 64, mb: 1 }} />
+            ) : (
+              <CancelIcon color="error" sx={{ fontSize: 64, mb: 1 }} />
+            )}
+            <Typography variant="h5">{getHeading()}</Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+              {getMessage()}
+            </Typography>
 
             {response && (
-              <dl className="result__details">
-                <div>
-                  <dt>Referencia</dt>
-                  <dd data-testid="result-reference">{response.transaction.reference}</dd>
-                </div>
-                <div>
-                  <dt>Total pagado</dt>
-                  <dd>{formatCurrency(response.transaction.totalInCents)}</dd>
-                </div>
-                {checkout.transactionStatus !== 'APPROVED' &&
-                  response.transaction.statusMessage && (
-                    <div>
-                      <dt>Motivo</dt>
-                      <dd>{response.transaction.statusMessage}</dd>
-                    </div>
-                  )}
-              </dl>
+              <Box sx={{ mt: 2, textAlign: 'left', display: 'grid', gap: 1 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', bgcolor: 'background.default', borderRadius: 2, px: 1.5, py: 1 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    Referencia
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{ fontWeight: 700, overflowWrap: 'anywhere', textAlign: 'right' }}
+                  >
+                    <span data-testid="result-reference">{response.transaction.reference}</span>
+                  </Typography>
+                </Box>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', bgcolor: 'background.default', borderRadius: 2, px: 1.5, py: 1 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    Total pagado
+                  </Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 700 }}>
+                    {formatCurrency(response.transaction.totalInCents)}
+                  </Typography>
+                </Box>
+                {checkout.transactionStatus !== 'APPROVED' && response.transaction.statusMessage && (
+                  <Alert severity="info" icon={false} sx={{ fontSize: '0.85rem' }}>
+                    {response.transaction.statusMessage}
+                  </Alert>
+                )}
+              </Box>
             )}
 
             {checkout.error && (
-              <div className="alert alert--error" role="alert">
+              <Alert severity="error" sx={{ mt: 1.5, fontSize: '0.85rem' }}>
                 {checkout.error}
-              </div>
+              </Alert>
             )}
 
-            <button
-              type="button"
-              className="btn btn--primary btn--block"
+            <Button
+              variant="contained"
+              color="primary"
+              fullWidth
+              size="large"
+              sx={{ mt: 2 }}
               onClick={handleBack}
               data-testid="result-back"
             >
               Volver a la tienda
-            </button>
+            </Button>
           </>
         )}
-      </div>
-    </div>
+      </Paper>
+    </Box>
   );
 }
 
