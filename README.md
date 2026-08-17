@@ -25,7 +25,7 @@ Aplicación de tienda online con **onboarding de pago con tarjeta de crédito** 
 
 | Capa | Tecnología |
 |---|---|
-| Frontend | React 18 + Vite + Redux Toolkit (SPA mobile-first) |
+| Frontend | React 18 + Vite + Redux Toolkit + **Material UI** (SPA mobile-first) |
 | Backend | NestJS + TypeScript (arquitectura hexagonal + Railway Oriented Programming) |
 | Base de datos | PostgreSQL 16 + Prisma ORM |
 | Pasarela de pagos | API sandbox (staging UAT) de la pasarela |
@@ -233,7 +233,7 @@ Flujo de 5 pasos exigido por el negocio:
 
 1. **Página de producto:** lista con nombre, descripción, precio y **stock disponible**. Botón **"Pagar con tarjeta"**.
 2. **Modal:** datos de la tarjeta (con detección de franquicia VISA/Mastercard y validación Luhn), datos del cliente y datos de entrega. La tarjeta se **tokeniza** contra la pasarela.
-3. **Resumen en backdrop:** producto + **tarifa base** (siempre) + **tarifa de envío** = total. Botón **"Pagar"**.
+3. **Resumen en backdrop:** producto + **tarifa base** (siempre) + **tarifa de envío** = total. Botón **"Pagar"**. (Componente `Backdrop` de Material UI, alineado con la referencia `m2.material.io/components/backdrop`).
 4. **Resultado:** pantalla de procesamiento y estado final (aprobado / rechazado / error) con la referencia de la transacción.
 5. **Vuelta al catálogo** con el stock actualizado.
 
