@@ -7,7 +7,6 @@ import ResultView from './features/result/ResultView';
 import { refreshTransactionStatus } from './features/checkout/checkoutSlice';
 import type { AppDispatch, RootState } from './app/store';
 import './styles/global.css';
-import './styles/pages.css';
 
 function App() {
   const dispatch = useDispatch<AppDispatch>();

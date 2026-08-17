@@ -1,5 +1,12 @@
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import Container from '@mui/material/Container';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Alert from '@mui/material/Alert';
+import AlertTitle from '@mui/material/AlertTitle';
+import Button from '@mui/material/Button';
+import Skeleton from '@mui/material/Skeleton';
 import { fetchProducts } from '../products/productsSlice';
 import type { AppDispatch, RootState } from '../../app/store';
 import { startCheckout } from '../checkout/checkoutSlice';
@@ -22,46 +29,92 @@ function ProductPage() {
   };
 
   return (
-    <div className="store">
-      <header className="store__header">
-        <h1 className="store__title">Mi Tienda</h1>
-        <p className="store__subtitle">
+    <Container maxWidth="lg" sx={{ py: 3, minHeight: '100dvh', display: 'flex', flexDirection: 'column' }}>
+      <Box
+        component="header"
+        sx={{
+          textAlign: 'center',
+          py: 3,
+          mb: 2,
+          borderRadius: '16px',
+          background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)',
+          color: '#fff',
+          px: 2,
+        }}
+      >
+        <Typography variant="h4" component="h1">
+          Mi Tienda
+        </Typography>
+        <Typography variant="body1" sx={{ opacity: 0.9, mt: 0.5 }}>
           Tecnología con envío a domicilio y pago 100% seguro
-        </p>
-      </header>
+        </Typography>
+      </Box>
 
       {status === 'loading' && (
-        <div className="store__status" role="status">
-          Cargando productos...
-        </div>
+        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 2 }} data-testid="products-loading">
+          {[1, 2, 3, 4].map((item) => (
+            <Box key={item}>
+              <Skeleton variant="rounded" height={200} />
+              <Skeleton variant="text" sx={{ mt: 1 }} />
+              <Skeleton variant="text" width="60%" />
+            </Box>
+          ))}
+        </Box>
       )}
 
       {status === 'failed' && (
-        <div className="store__status store__status--error" role="alert">
-          {error ?? 'No fue posible cargar los productos. Intenta de nuevo.'}
-          <button type="button" className="btn btn--ghost" onClick={() => void dispatch(fetchProducts())}>
-            Reintentar
-          </button>
-        </div>
+        <Alert severity="error" data-testid="products-error">
+          <AlertTitle>No pudimos cargar los productos</AlertTitle>
+          {error ?? 'Intenta de nuevo en un momento.'}
+          <Box sx={{ mt: 1 }}>
+            <Button
+              variant="outlined"
+              color="error"
+              onClick={() => void dispatch(fetchProducts())}
+            >
+              Reintentar
+            </Button>
+          </Box>
+        </Alert>
       )}
 
       {status === 'succeeded' && (
-        <ul className="product-grid">
+        <Box
+          component="ul"
+          sx={{
+            listStyle: 'none',
+            p: 0,
+            m: 0,
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+            gap: 2,
+          }}
+        >
           {products.map((product) => (
-            <li key={product.id} className="product-grid__item">
+            <Box component="li" key={product.id} sx={{ display: 'flex' }}>
               <ProductCard product={product} onBuy={handleBuy} />
-            </li>
+            </Box>
           ))}
-        </ul>
+        </Box>
       )}
 
-      <footer className="store__fees">
-        <p>
-          Los precios incluyen una tarifa base de <strong>{formatCurrency(3000)}</strong> y
-          envío por <strong>{formatCurrency(5000)}</strong>.
-        </p>
-      </footer>
-    </div>
+      <Box
+        component="footer"
+        sx={{
+          mt: 3,
+          p: 1.5,
+          borderRadius: '12px',
+          bgcolor: 'rgba(79, 70, 229, 0.08)',
+          color: 'text.secondary',
+          textAlign: 'center',
+        }}
+      >
+        <Typography variant="body2">
+          Los precios incluyen una tarifa base de <strong>{formatCurrency(3000)}</strong> y envío por{' '}
+          <strong>{formatCurrency(5000)}</strong>.
+        </Typography>
+      </Box>
+    </Container>
   );
 }
 

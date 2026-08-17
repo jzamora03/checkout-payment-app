@@ -80,7 +80,7 @@ describe('ProductPage', () => {
       </Provider>,
     );
 
-    expect(screen.getByText('Cargando productos...')).toBeInTheDocument();
+    expect(screen.getByTestId('products-loading')).toBeInTheDocument();
     resolveFn!(products);
     expect(await screen.findByText('Auriculares')).toBeInTheDocument();
   });
