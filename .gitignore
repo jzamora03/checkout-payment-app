@@ -33,3 +33,4 @@ apps/api/prisma/*.db-journal
 # CDK
 cdk.out/
 infra/cdk.out/
+infra/build/
