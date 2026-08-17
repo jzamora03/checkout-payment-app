@@ -1,0 +1,124 @@
+{
+  "info": {
+    "name": "Checkout Payment API",
+    "description": "Colección de Postman para probar la API de checkout, pagos y entregas.\n\nBase: http://localhost:3000/api/v1 (o la URL desplegada)\n\nNotas:\n- Tarjetas de prueba: 4242 4242 4242 4242 (aprobada), 4111 1111 1111 1111 (declinada).\n- El token de la tarjeta se obtiene de la pasarela con la llave pública antes de crear el checkout.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Products",
+      "item": [
+        {
+          "name": "Listar productos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products",
+              "host": ["{{baseUrl}}"],
+              "path": ["products"]
+            }
+          }
+        },
+        {
+          "name": "Detalle de producto",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products/{{productId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", "{{productId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Checkout",
+      "item": [
+        {
+          "name": "Crear checkout / procesar pago",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"{{productId}}\",\n  \"cardToken\": \"tok_test_...\",\n  \"customer\": {\n    \"email\": \"cliente@test.com\",\n    \"firstName\": \"Juan\",\n    \"lastName\": \"Perez\",\n    \"documentType\": \"CC\",\n    \"documentNumber\": \"1067981234\",\n    \"phone\": \"3001234567\"\n  },\n  \"delivery\": {\n    \"addressLine1\": \"Calle 123 # 45-67\",\n    \"addressLine2\": null,\n    \"city\": \"Bogota\",\n    \"state\": \"Cundinamarca\",\n    \"postalCode\": \"110111\",\n    \"country\": \"CO\",\n    \"notes\": null\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/checkout/transactions",
+              "host": ["{{baseUrl}}"],
+              "path": ["checkout", "transactions"]
+            }
+          }
+        },
+        {
+          "name": "Consultar estado de transacción",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/checkout/transactions/{{reference}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["checkout", "transactions", "{{reference}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Webhooks",
+      "item": [
+        {
+          "name": "Evento de pasarela (webhook)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-signature",
+                "value": "{{eventsKey}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"event\": \"transaction.updated\",\n  \"data\": {\n    \"transaction\": {\n      \"id\": \"15113-0000-00000\",\n      \"status\": \"APPROVED\",\n      \"status_message\": \"ok\"\n    }\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/webhooks/payments",
+              "host": ["{{baseUrl}}"],
+              "path": ["webhooks", "payments"]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/api/v1"
+    },
+    {
+      "key": "productId",
+      "value": "reemplazar-con-uuid-de-producto"
+    },
+    {
+      "key": "reference",
+      "value": "REF-XXXXXXXX"
+    },
+    {
+      "key": "eventsKey",
+      "value": "stagtest_events_2PDUmhMywUkvb1LvxYnayFbmofT7w39N"
+    }
+  ]
+}
