@@ -17,6 +17,7 @@ import { ListProductsUseCase } from './use-cases/list-products.use-case';
     GetTransactionStatusUseCase,
   ],
   exports: [
+    PaymentOutcomeApplier,
     ListProductsUseCase,
     GetProductUseCase,
     CreateCheckoutTransactionUseCase,
