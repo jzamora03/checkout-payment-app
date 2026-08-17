@@ -1,0 +1,53 @@
+:root {
+  color-scheme: light dark;
+  --color-bg: #f8fafc;
+  --color-surface: #ffffff;
+  --color-text: #0f172a;
+  --color-muted: #64748b;
+  --color-primary: #4f46e5;
+  --color-primary-dark: #4338ca;
+  --color-success: #16a34a;
+  --color-danger: #dc2626;
+  --color-warning: #d97706;
+  --radius: 12px;
+  --shadow: 0 4px 24px rgba(15, 23, 42, 0.08);
+  --space: 16px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+}
+
+input {
+  font: inherit;
+}
+
+.page {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: var(--space);
+  min-height: 100dvh;
+}
+
+.product-grid {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: var(--space);
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+}
