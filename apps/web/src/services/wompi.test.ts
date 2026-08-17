@@ -33,7 +33,7 @@ describe('tokenizeCard', () => {
     const body = JSON.parse(options.body);
     expect(body.number).toBe('4242424242424242');
     expect(body.exp_month).toBe('12');
-    expect(body.exp_year).toBe('2099');
+    expect(body.exp_year).toBe('99');
   });
 
   it('lanza error si falta la configuración', async () => {

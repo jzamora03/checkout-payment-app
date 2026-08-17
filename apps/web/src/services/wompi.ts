@@ -32,13 +32,13 @@ export async function tokenizeCard(card: CardForm): Promise<TokenizedCard> {
       number: card.number.replace(/\s/g, ''),
       cvc: card.cvc,
       exp_month: expMonth,
-      exp_year: `20${expYear}`,
+      exp_year: expYear.padStart(2, '0').slice(-2),
       card_holder: card.holder,
     }),
   });
 
   if (!response.ok) {
-    throw new TokenizationError('La tarjeta fue rechazada al tokenizarse');
+    throw new TokenizationError(await extractErrorMessage(response));
   }
 
   const body = (await response.json()) as {
@@ -54,4 +54,25 @@ export async function tokenizeCard(card: CardForm): Promise<TokenizedCard> {
     brand: data.brand ?? getCardBrand(card.number),
     lastFour: data.last_four ?? card.number.replace(/\s/g, '').slice(-4),
   };
+}
+
+async function extractErrorMessage(response: Response): Promise<string> {
+  try {
+    const body = (await response.json()) as {
+      error?: { type?: string; reason?: string };
+      messages?: Record<string, string[]>;
+    };
+    if (body?.error?.reason) {
+      return `La tarjeta fue rechazada: ${body.error.reason}`;
+    }
+    if (body?.messages) {
+      const details = Object.entries(body.messages)
+        .map(([field, messages]) => `${field}: ${messages.join(', ')}`)
+        .join(' · ');
+      return `La tarjeta fue rechazada: ${details}`;
+    }
+  } catch {
+    // sin cuerpo legible
+  }
+  return 'La tarjeta fue rechazada al tokenizarse';
 }
