@@ -9,7 +9,7 @@ export enum TransactionStatus {
 export interface TransactionProps {
   id: string;
   reference: string;
-  wompiTransactionId: string | null;
+  gatewayTransactionId: string | null;
   productId: string;
   customerId: string;
   deliveryId: string | null;
@@ -50,8 +50,8 @@ export class Transaction {
     return this.props.reference;
   }
 
-  get wompiTransactionId(): string | null {
-    return this.props.wompiTransactionId;
+  get gatewayTransactionId(): string | null {
+    return this.props.gatewayTransactionId;
   }
 
   get productId(): string {
@@ -110,8 +110,8 @@ export class Transaction {
     return this.props.status === TransactionStatus.APPROVED;
   }
 
-  withWompiId(wompiTransactionId: string): Transaction {
-    return new Transaction({ ...this.props, wompiTransactionId });
+  withGatewayTransactionId(gatewayTransactionId: string): Transaction {
+    return new Transaction({ ...this.props, gatewayTransactionId });
   }
 
   markApproved(message?: string | null): Transaction {

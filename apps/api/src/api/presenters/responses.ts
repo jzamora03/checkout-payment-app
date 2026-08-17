@@ -39,7 +39,7 @@ export interface DeliveryResponse {
 export interface TransactionResponse {
   id: string;
   reference: string;
-  wompiTransactionId: string | null;
+  gatewayTransactionId: string | null;
   status: string;
   statusMessage: string | null;
   amountInCents: number;
@@ -102,7 +102,7 @@ export const transactionToResponse = (
   return {
     id: props.id,
     reference: props.reference,
-    wompiTransactionId: props.wompiTransactionId,
+    gatewayTransactionId: props.gatewayTransactionId,
     status: props.status,
     statusMessage: props.statusMessage,
     amountInCents: props.amountInCents,

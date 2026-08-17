@@ -5,7 +5,7 @@ import { makeTransaction } from '../../test/helpers';
 import { TransactionStatus } from '../../domain/transaction/transaction.entity';
 
 describe('WebhooksController', () => {
-  const transactionRepository = { findByWompiId: jest.fn() };
+  const transactionRepository = { findByGatewayTransactionId: jest.fn() };
   const outcomeApplier = { apply: jest.fn() };
   const signatureService = { verify: jest.fn() };
 
@@ -36,8 +36,8 @@ describe('WebhooksController', () => {
 
   it('procesa un evento válido de transacción aprobada', async () => {
     signatureService.verify.mockReturnValue(true);
-    transactionRepository.findByWompiId.mockResolvedValue(
-      makeTransaction({ wompiTransactionId: 'wompi-1' }),
+    transactionRepository.findByGatewayTransactionId.mockResolvedValue(
+      makeTransaction({ gatewayTransactionId: 'gateway-1' }),
     );
     outcomeApplier.apply.mockResolvedValue(
       ok(makeTransaction({ status: TransactionStatus.APPROVED })),
@@ -49,14 +49,14 @@ describe('WebhooksController', () => {
           JSON.stringify({
             event: 'transaction.updated',
             data: {
-              transaction: { id: 'wompi-1', status: 'APPROVED', status_message: 'ok' },
+              transaction: { id: 'gateway-1', status: 'APPROVED', status_message: 'ok' },
             },
           }),
         ),
       ),
       {
         data: {
-          transaction: { id: 'wompi-1', status: 'APPROVED', status_message: 'ok' },
+          transaction: { id: 'gateway-1', status: 'APPROVED', status_message: 'ok' },
         },
       },
       'valid-signature',
@@ -64,8 +64,8 @@ describe('WebhooksController', () => {
 
     expect(response).toEqual({ received: true });
     expect(outcomeApplier.apply).toHaveBeenCalledWith(
-      expect.objectContaining({ wompiTransactionId: 'wompi-1' }),
-      expect.objectContaining({ id: 'wompi-1', status: 'APPROVED' }),
+      expect.objectContaining({ gatewayTransactionId: 'gateway-1' }),
+      expect.objectContaining({ id: 'gateway-1', status: 'APPROVED' }),
     );
   });
 
@@ -77,6 +77,6 @@ describe('WebhooksController', () => {
       'valid-signature',
     );
     expect(response).toEqual({ received: true });
-    expect(transactionRepository.findByWompiId).not.toHaveBeenCalled();
+    expect(transactionRepository.findByGatewayTransactionId).not.toHaveBeenCalled();
   });
 });

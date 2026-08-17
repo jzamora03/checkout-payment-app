@@ -43,7 +43,7 @@ describe('PaymentOutcomeApplier', () => {
   it('aprueba la transacción, descuenta stock y asigna la entrega', async () => {
     const tx = makeTransaction();
     const result = await applier.apply(tx, {
-      id: 'wompi-1',
+      id: 'gateway-1',
       status: 'APPROVED',
       statusMessage: 'ok',
     });
@@ -64,7 +64,7 @@ describe('PaymentOutcomeApplier', () => {
   it('es idempotente: no descuenta stock dos veces si ya está aprobada', async () => {
     const tx = makeTransaction({ status: TransactionStatus.APPROVED });
     const result = await applier.apply(tx, {
-      id: 'wompi-1',
+      id: 'gateway-1',
       status: 'APPROVED',
       statusMessage: 'ok',
     });
@@ -77,7 +77,7 @@ describe('PaymentOutcomeApplier', () => {
   it('marca la transacción como declinada', async () => {
     const tx = makeTransaction();
     const result = await applier.apply(tx, {
-      id: 'wompi-1',
+      id: 'gateway-1',
       status: 'DECLINED',
       statusMessage: 'Fondos insuficientes',
     });
@@ -89,7 +89,7 @@ describe('PaymentOutcomeApplier', () => {
   it('marca la transacción como error para estados ERROR y VOIDED', async () => {
     const tx = makeTransaction();
     const errorResult = await applier.apply(tx, {
-      id: 'wompi-1',
+      id: 'gateway-1',
       status: 'ERROR',
       statusMessage: 'fallo',
     });
@@ -97,7 +97,7 @@ describe('PaymentOutcomeApplier', () => {
 
     const tx2 = makeTransaction({ id: 'tx-2', reference: 'REF-2' });
     const voidedResult = await applier.apply(tx2, {
-      id: 'wompi-2',
+      id: 'gateway-2',
       status: 'VOIDED',
       statusMessage: 'anulada',
     });
@@ -107,7 +107,7 @@ describe('PaymentOutcomeApplier', () => {
   it('deja la transacción sin cambios si sigue PENDING', async () => {
     const tx = makeTransaction();
     const result = await applier.apply(tx, {
-      id: 'wompi-1',
+      id: 'gateway-1',
       status: 'PENDING',
       statusMessage: null,
     });
@@ -118,7 +118,7 @@ describe('PaymentOutcomeApplier', () => {
     productRepository.decrementStock.mockResolvedValue(false);
     const tx = makeTransaction();
     const result = await applier.apply(tx, {
-      id: 'wompi-1',
+      id: 'gateway-1',
       status: 'APPROVED',
       statusMessage: 'ok',
     });
@@ -134,7 +134,7 @@ describe('PaymentOutcomeApplier', () => {
     productRepository.findById.mockResolvedValue(null);
     const tx = makeTransaction();
     const result = await applier.apply(tx, {
-      id: 'wompi-1',
+      id: 'gateway-1',
       status: 'APPROVED',
       statusMessage: 'ok',
     });
@@ -144,7 +144,7 @@ describe('PaymentOutcomeApplier', () => {
   it('aprueba sin entrega asociada (deliveryId nulo)', async () => {
     const tx = makeTransaction({ deliveryId: null });
     const result = await applier.apply(tx, {
-      id: 'wompi-1',
+      id: 'gateway-1',
       status: 'APPROVED',
       statusMessage: 'ok',
     });
@@ -155,7 +155,7 @@ describe('PaymentOutcomeApplier', () => {
   it('no modifica una transacción finalizada ante un DECLINED posterior', async () => {
     const tx = makeTransaction({ status: TransactionStatus.APPROVED });
     const result = await applier.apply(tx, {
-      id: 'wompi-1',
+      id: 'gateway-1',
       status: 'DECLINED',
       statusMessage: 'tarde',
     });
@@ -165,7 +165,7 @@ describe('PaymentOutcomeApplier', () => {
   it('no modifica una transacción finalizada ante un ERROR posterior', async () => {
     const tx = makeTransaction({ status: TransactionStatus.DECLINED });
     const result = await applier.apply(tx, {
-      id: 'wompi-1',
+      id: 'gateway-1',
       status: 'ERROR',
       statusMessage: 'tarde',
     });

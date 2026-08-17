@@ -61,7 +61,7 @@ export function makeTransaction(
   return Transaction.create({
     id: 'transaction-1',
     reference: 'REF-1',
-    wompiTransactionId: null,
+    gatewayTransactionId: null,
     productId: 'product-1',
     customerId: 'customer-1',
     deliveryId: 'delivery-1',

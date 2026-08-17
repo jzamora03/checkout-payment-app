@@ -123,7 +123,7 @@ erDiagram
     TRANSACTION {
         uuid id PK
         string reference UK "REF-..."
-        string wompiTransactionId UK
+        string gatewayTransactionId UK
         uuid productId FK
         uuid customerId FK
         uuid deliveryId FK "único"
@@ -311,10 +311,10 @@ Resultado de cobertura (Jest):
 
 | Métrica | Cobertura |
 |---|---|
-| Líneas | **90.04%** |
-| Statements | **89.67%** |
-| Funciones | **86.89%** |
-| Ramas | **82.32%** |
+| Líneas | **90.09%** |
+| Statements | **89.79%** |
+| Funciones | **85.33%** |
+| Ramas | **79.44%** |
 
 - **80 tests** con React Testing Library y user-event: validación Luhn/detección de franquicia, slices (Redux), tokenización, formularios de cliente/entrega, modal de pago, resumen, resultado, persistencia en `localStorage` y recuperación tras refresco.
 

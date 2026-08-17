@@ -41,9 +41,9 @@ export class PrismaTransactionRepository implements TransactionRepositoryPort {
     return transaction ? this.toDomain(transaction) : null;
   }
 
-  async findByWompiId(wompiTransactionId: string): Promise<Transaction | null> {
+  async findByGatewayTransactionId(gatewayTransactionId: string): Promise<Transaction | null> {
     const transaction = await this.prisma.transaction.findUnique({
-      where: { wompiTransactionId },
+      where: { gatewayTransactionId },
     });
     return transaction ? this.toDomain(transaction) : null;
   }
@@ -53,7 +53,7 @@ export class PrismaTransactionRepository implements TransactionRepositoryPort {
     const updated = await this.prisma.transaction.update({
       where: { id: transaction.id },
       data: {
-        wompiTransactionId: props.wompiTransactionId,
+        gatewayTransactionId: props.gatewayTransactionId,
         status: props.status,
         statusMessage: props.statusMessage,
         cardBrand: props.cardBrand,
@@ -66,7 +66,7 @@ export class PrismaTransactionRepository implements TransactionRepositoryPort {
   private toDomain(model: {
     id: string;
     reference: string;
-    wompiTransactionId: string | null;
+    gatewayTransactionId: string | null;
     productId: string;
     customerId: string;
     deliveryId: string | null;
@@ -87,7 +87,7 @@ export class PrismaTransactionRepository implements TransactionRepositoryPort {
     return Transaction.create({
       id: model.id,
       reference: model.reference,
-      wompiTransactionId: model.wompiTransactionId,
+      gatewayTransactionId: model.gatewayTransactionId,
       productId: model.productId,
       customerId: model.customerId,
       deliveryId: model.deliveryId,

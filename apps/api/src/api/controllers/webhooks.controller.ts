@@ -14,7 +14,7 @@ import { GatewayTransactionResult } from '../../application/ports/payment-gatewa
 import { TransactionRepositoryPort } from '../../application/ports/transaction-repository.port';
 import { WebhookSignatureService } from '../../infrastructure/payment/webhook-signature.service';
 
-interface WompiEventPayload {
+interface GatewayEventPayload {
   event?: string;
   data?: {
     transaction?: {
@@ -39,7 +39,7 @@ export class WebhooksController {
   @HttpCode(200)
   async handlePaymentEvent(
     @Req() req: Request,
-    @Body() body: WompiEventPayload,
+    @Body() body: GatewayEventPayload,
     @Headers('x-signature') signature?: string,
   ): Promise<{ received: boolean }> {
     const rawBody = (req as Request & { rawBody?: Buffer }).rawBody;
@@ -54,7 +54,7 @@ export class WebhooksController {
       return { received: true };
     }
 
-    const transaction = await this.transactionRepository.findByWompiId(gatewayTx.id);
+    const transaction = await this.transactionRepository.findByGatewayTransactionId(gatewayTx.id);
     if (!transaction) {
       return { received: true };
     }

@@ -18,7 +18,7 @@ const response = {
   transaction: {
     id: 'tx-1',
     reference: 'REF-123',
-    wompiTransactionId: 'wompi-1',
+    gatewayTransactionId: 'gateway-1',
     status: 'APPROVED' as const,
     statusMessage: null,
     amountInCents: 100000,

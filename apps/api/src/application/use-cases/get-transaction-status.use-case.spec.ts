@@ -7,7 +7,7 @@ describe('GetTransactionStatusUseCase', () => {
   const transactionRepository = {
     findByReference: jest.fn(),
     create: jest.fn(),
-    findByWompiId: jest.fn(),
+    findByGatewayTransactionId: jest.fn(),
     update: jest.fn(),
   };
   const paymentGateway = {
@@ -48,10 +48,10 @@ describe('GetTransactionStatusUseCase', () => {
   });
 
   it('sincroniza y aplica un APPROVED desde la pasarela', async () => {
-    const pending = makeTransaction({ wompiTransactionId: 'wompi-1' });
+    const pending = makeTransaction({ gatewayTransactionId: 'gateway-1' });
     transactionRepository.findByReference.mockResolvedValue(pending);
     paymentGateway.getTransaction.mockResolvedValue(
-      ok({ id: 'wompi-1', status: 'APPROVED', statusMessage: 'ok' }),
+      ok({ id: 'gateway-1', status: 'APPROVED', statusMessage: 'ok' }),
     );
     outcomeApplier.apply.mockResolvedValue(
       ok(makeTransaction({ status: TransactionStatus.APPROVED })),
@@ -66,10 +66,10 @@ describe('GetTransactionStatusUseCase', () => {
 
   it('devuelve requiresSync=true si sigue PENDING', async () => {
     transactionRepository.findByReference.mockResolvedValue(
-      makeTransaction({ wompiTransactionId: 'wompi-1' }),
+      makeTransaction({ gatewayTransactionId: 'gateway-1' }),
     );
     paymentGateway.getTransaction.mockResolvedValue(
-      ok({ id: 'wompi-1', status: 'PENDING', statusMessage: null }),
+      ok({ id: 'gateway-1', status: 'PENDING', statusMessage: null }),
     );
 
     const result = await useCase.execute('REF-1');
@@ -81,7 +81,7 @@ describe('GetTransactionStatusUseCase', () => {
 
   it('devuelve requiresSync=true si la pasarela falla', async () => {
     transactionRepository.findByReference.mockResolvedValue(
-      makeTransaction({ wompiTransactionId: 'wompi-1' }),
+      makeTransaction({ gatewayTransactionId: 'gateway-1' }),
     );
     paymentGateway.getTransaction.mockResolvedValue(
       err(new Error('timeout') as never),

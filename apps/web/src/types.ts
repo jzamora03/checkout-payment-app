@@ -41,7 +41,7 @@ export type TransactionStatus =
 export interface Transaction {
   id: string;
   reference: string;
-  wompiTransactionId: string | null;
+  gatewayTransactionId: string | null;
   status: TransactionStatus;
   statusMessage: string | null;
   amountInCents: number;

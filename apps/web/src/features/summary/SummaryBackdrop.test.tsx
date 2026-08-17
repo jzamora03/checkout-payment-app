@@ -5,9 +5,9 @@ import SummaryBackdrop from './SummaryBackdrop';
 import productsReducer, { ProductsState } from '../products/productsSlice';
 import checkoutReducer from '../checkout/checkoutSlice';
 import type { RootState } from '../../app/store';
-import { TokenizationError } from '../../services/wompi';
+import { TokenizationError } from '../../services/payment';
 
-jest.mock('../../services/wompi', () => ({
+jest.mock('../../services/payment', () => ({
   tokenizeCard: jest.fn(),
   TokenizationError: class extends Error {
     constructor(message: string) {
@@ -24,7 +24,7 @@ jest.mock('../../services/api', () => ({
   },
 }));
 
-import { tokenizeCard } from '../../services/wompi';
+import { tokenizeCard } from '../../services/payment';
 import { api } from '../../services/api';
 
 const mockApi = api as jest.Mocked<typeof api>;
@@ -108,7 +108,7 @@ describe('SummaryBackdrop', () => {
       transaction: {
         id: 'tx-1',
         reference: 'REF-1',
-        wompiTransactionId: 'wompi-1',
+        gatewayTransactionId: 'gateway-1',
         status: 'APPROVED',
         statusMessage: 'ok',
         amountInCents: 100000,

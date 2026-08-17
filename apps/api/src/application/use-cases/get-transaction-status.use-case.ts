@@ -27,12 +27,12 @@ export class GetTransactionStatusUseCase {
       return err(new TransactionNotFoundError(reference));
     }
 
-    if (transaction.isFinalized || !transaction.wompiTransactionId) {
+    if (transaction.isFinalized || !transaction.gatewayTransactionId) {
       return ok({ transaction, requiresSync: false });
     }
 
     const gatewayResult = await this.paymentGateway.getTransaction(
-      transaction.wompiTransactionId,
+      transaction.gatewayTransactionId,
     );
     if (gatewayResult.isErr()) {
       return ok({ transaction, requiresSync: true });

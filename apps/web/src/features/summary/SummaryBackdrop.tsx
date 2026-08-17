@@ -19,7 +19,7 @@ import {
   setCardToken,
   submitPayment,
 } from '../checkout/checkoutSlice';
-import { tokenizeCard, TokenizationError } from '../../services/wompi';
+import { tokenizeCard, TokenizationError } from '../../services/payment';
 import type { CardForm as CardData } from '../../types';
 import { formatCurrency } from '../../utils/format';
 import CardForm from '../payment/CardForm';

@@ -39,9 +39,9 @@ describe('Transaction (dominio)', () => {
 
   it('asigna el id de la pasarela sin mutar el original', () => {
     const tx = makeTransaction();
-    const updated = tx.withWompiId('wompi-123');
-    expect(updated.wompiTransactionId).toBe('wompi-123');
-    expect(tx.wompiTransactionId).toBeNull();
+    const updated = tx.withGatewayTransactionId('gateway-123');
+    expect(updated.gatewayTransactionId).toBe('gateway-123');
+    expect(tx.gatewayTransactionId).toBeNull();
   });
 
   it('usa mensajes por defecto cuando no se provee uno', () => {

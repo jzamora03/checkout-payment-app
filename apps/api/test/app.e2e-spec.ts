@@ -57,10 +57,10 @@ describe('API e2e', () => {
       ok({ acceptanceToken: 'acceptance-token' }),
     );
     mockGateway.createTransaction.mockResolvedValue(
-      ok({ id: 'wompi-e2e-1', status: 'PENDING', statusMessage: null }),
+      ok({ id: 'gateway-e2e-1', status: 'PENDING', statusMessage: null }),
     );
     mockGateway.getTransaction.mockResolvedValue(
-      ok({ id: 'wompi-e2e-1', status: 'APPROVED', statusMessage: 'ok' }),
+      ok({ id: 'gateway-e2e-1', status: 'APPROVED', statusMessage: 'ok' }),
     );
 
     const moduleRef = await Test.createTestingModule({
@@ -141,15 +141,15 @@ describe('API e2e', () => {
       where: { reference: response.body.transaction.reference },
     });
     expect(persisted?.status).toBe('APPROVED');
-    expect(persisted?.wompiTransactionId).toBe('wompi-e2e-1');
+    expect(persisted?.gatewayTransactionId).toBe('gateway-e2e-1');
   });
 
   it('procesa un checkout declinado sin tocar el stock', async () => {
     mockGateway.getTransaction.mockResolvedValue(
-      ok({ id: 'wompi-e2e-2', status: 'DECLINED', statusMessage: 'Fondos insuficientes' }),
+      ok({ id: 'gateway-e2e-2', status: 'DECLINED', statusMessage: 'Fondos insuficientes' }),
     );
     mockGateway.createTransaction.mockResolvedValue(
-      ok({ id: 'wompi-e2e-2', status: 'PENDING', statusMessage: null }),
+      ok({ id: 'gateway-e2e-2', status: 'PENDING', statusMessage: null }),
     );
 
     const response = await request(app.getHttpServer())

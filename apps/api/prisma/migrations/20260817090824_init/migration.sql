@@ -60,7 +60,7 @@ CREATE TABLE "Delivery" (
 CREATE TABLE "Transaction" (
     "id" TEXT NOT NULL,
     "reference" TEXT NOT NULL,
-    "wompiTransactionId" TEXT,
+    "gatewayTransactionId" TEXT,
     "productId" TEXT NOT NULL,
     "customerId" TEXT NOT NULL,
     "deliveryId" TEXT,
@@ -104,7 +104,7 @@ CREATE INDEX "Delivery_customerId_idx" ON "Delivery"("customerId");
 CREATE UNIQUE INDEX "Transaction_reference_key" ON "Transaction"("reference");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Transaction_wompiTransactionId_key" ON "Transaction"("wompiTransactionId");
+CREATE UNIQUE INDEX "Transaction_gatewayTransactionId_key" ON "Transaction"("gatewayTransactionId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Transaction_deliveryId_key" ON "Transaction"("deliveryId");

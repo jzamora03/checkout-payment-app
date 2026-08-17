@@ -1,11 +1,11 @@
 import axios from 'axios';
-import { WompiPaymentGateway } from './wompi-payment.gateway';
+import { PaymentGatewayAdapter } from './payment.gateway';
 
 jest.mock('axios');
 
 const mockAxios = axios as jest.Mocked<typeof axios>;
 
-describe('WompiPaymentGateway', () => {
+describe('PaymentGatewayAdapter', () => {
   const configService = {
     getOrThrow: jest.fn((key: string) => {
       const values: Record<string, string> = {
@@ -17,7 +17,7 @@ describe('WompiPaymentGateway', () => {
     }),
   };
 
-  let gateway: WompiPaymentGateway;
+  let gateway: PaymentGatewayAdapter;
   const mockHttp = {
     get: jest.fn(),
     post: jest.fn(),
@@ -30,7 +30,7 @@ describe('WompiPaymentGateway', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (payload: any) => payload?.isAxiosError === true,
     );
-    gateway = new WompiPaymentGateway(configService as never);
+    gateway = new PaymentGatewayAdapter(configService as never);
   });
 
   it('obtiene el token de aceptación', async () => {
@@ -63,7 +63,7 @@ describe('WompiPaymentGateway', () => {
     mockHttp.post.mockResolvedValue({
       data: {
         data: {
-          id: 'wompi-1',
+          id: 'gateway-1',
           status: 'APPROVED',
           status_message: 'ok',
           payment_method: { brand: 'VISA', last_four: '4242' },
@@ -84,7 +84,7 @@ describe('WompiPaymentGateway', () => {
 
     expect(result.isOk()).toBe(true);
     expect(result._unsafeUnwrap()).toMatchObject({
-      id: 'wompi-1',
+      id: 'gateway-1',
       status: 'APPROVED',
       cardBrand: 'VISA',
       cardLastFour: '4242',
@@ -105,7 +105,7 @@ describe('WompiPaymentGateway', () => {
 
   it('normaliza estados desconocidos a ERROR', async () => {
     mockHttp.post.mockResolvedValue({
-      data: { data: { id: 'wompi-1', status: 'WEIRD' } },
+      data: { data: { id: 'gateway-1', status: 'WEIRD' } },
     });
     const result = await gateway.createTransaction({
       reference: 'REF-1',
@@ -147,13 +147,13 @@ describe('WompiPaymentGateway', () => {
 
   it('consulta el estado de una transacción con la llave pública', async () => {
     mockHttp.get.mockResolvedValue({
-      data: { data: { id: 'wompi-1', status: 'DECLINED', status_message: 'no' } },
+      data: { data: { id: 'gateway-1', status: 'DECLINED', status_message: 'no' } },
     });
-    const result = await gateway.getTransaction('wompi-1');
+    const result = await gateway.getTransaction('gateway-1');
     expect(result.isOk()).toBe(true);
     expect(result._unsafeUnwrap().status).toBe('DECLINED');
     expect(mockHttp.get).toHaveBeenCalledWith(
-      '/transactions/wompi-1',
+      '/transactions/gateway-1',
       expect.objectContaining({
         headers: { Authorization: 'Bearer pub_test_key' },
       }),

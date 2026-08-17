@@ -29,7 +29,7 @@ describe('CreateCheckoutTransactionUseCase', () => {
   const transactionRepository = {
     create: jest.fn(),
     findByReference: jest.fn(),
-    findByWompiId: jest.fn(),
+    findByGatewayTransactionId: jest.fn(),
     update: jest.fn(),
   };
   const paymentGateway = {
@@ -98,20 +98,20 @@ describe('CreateCheckoutTransactionUseCase', () => {
     );
     paymentGateway.createTransaction.mockResolvedValue(
       ok({
-        id: 'wompi-1',
+        id: 'gateway-1',
         status: 'PENDING',
         statusMessage: null,
       }),
     );
     paymentGateway.getTransaction.mockResolvedValue(
-      ok({ id: 'wompi-1', status: 'PENDING', statusMessage: null }),
+      ok({ id: 'gateway-1', status: 'PENDING', statusMessage: null }),
     );
     outcomeApplier.apply.mockResolvedValue(ok(makeTransaction()));
   });
 
   it('crea la transacción PENDING y llama a la pasarela con la firma correcta', async () => {
     paymentGateway.getTransaction.mockResolvedValue(
-      ok({ id: 'wompi-1', status: 'APPROVED', statusMessage: 'ok' }),
+      ok({ id: 'gateway-1', status: 'APPROVED', statusMessage: 'ok' }),
     );
     outcomeApplier.apply.mockResolvedValue(
       ok(makeTransaction({ status: TransactionStatus.APPROVED })),
@@ -190,7 +190,7 @@ describe('CreateCheckoutTransactionUseCase', () => {
 
   it('aplica el resultado DECLINED de la pasarela', async () => {
     paymentGateway.getTransaction.mockResolvedValue(
-      ok({ id: 'wompi-1', status: 'DECLINED', statusMessage: 'Fondos' }),
+      ok({ id: 'gateway-1', status: 'DECLINED', statusMessage: 'Fondos' }),
     );
     outcomeApplier.apply.mockResolvedValue(
       ok(makeTransaction({ status: TransactionStatus.DECLINED })),
@@ -204,7 +204,7 @@ describe('CreateCheckoutTransactionUseCase', () => {
 
   it('devuelve requiresSync=true si la pasarela sigue en PENDING', async () => {
     paymentGateway.getTransaction.mockResolvedValue(
-      ok({ id: 'wompi-1', status: 'PENDING', statusMessage: null }),
+      ok({ id: 'gateway-1', status: 'PENDING', statusMessage: null }),
     );
 
     const result = await useCase.execute(input);
@@ -216,7 +216,7 @@ describe('CreateCheckoutTransactionUseCase', () => {
 
   it('propaga el error del aplicador de resultado', async () => {
     paymentGateway.getTransaction.mockResolvedValue(
-      ok({ id: 'wompi-1', status: 'APPROVED', statusMessage: 'ok' }),
+      ok({ id: 'gateway-1', status: 'APPROVED', statusMessage: 'ok' }),
     );
     outcomeApplier.apply.mockResolvedValue(err(new Error('Sin stock') as never));
 

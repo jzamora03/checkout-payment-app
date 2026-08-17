@@ -9,7 +9,7 @@ import {
   PaymentGatewayPort,
 } from '../../application/ports/payment-gateway.port';
 
-interface WompiTransactionResponse {
+interface GatewayTransactionResponse {
   id: string;
   status: string;
   status_message?: string | null;
@@ -20,7 +20,7 @@ interface WompiTransactionResponse {
 }
 
 @Injectable()
-export class WompiPaymentGateway implements PaymentGatewayPort {
+export class PaymentGatewayAdapter implements PaymentGatewayPort {
   private readonly http: AxiosInstance;
   private readonly apiUrl: string;
   private readonly publicKey: string;
@@ -88,10 +88,10 @@ export class WompiPaymentGateway implements PaymentGatewayPort {
   }
 
   async getTransaction(
-    wompiTransactionId: string,
+    gatewayTransactionId: string,
   ): Promise<Result<GatewayTransactionResult, GatewayError>> {
     try {
-      const { data } = await this.http.get(`/transactions/${wompiTransactionId}`, {
+      const { data } = await this.http.get(`/transactions/${gatewayTransactionId}`, {
         headers: { Authorization: `Bearer ${this.publicKey}` },
       });
       return ok(this.mapTransaction(data?.data));
@@ -100,7 +100,7 @@ export class WompiPaymentGateway implements PaymentGatewayPort {
     }
   }
 
-  private mapTransaction(tx: WompiTransactionResponse): GatewayTransactionResult {
+  private mapTransaction(tx: GatewayTransactionResponse): GatewayTransactionResult {
     return {
       id: tx.id,
       status: this.normalizeStatus(tx.status),
@@ -130,7 +130,7 @@ export class WompiPaymentGateway implements PaymentGatewayPort {
       };
       const reason = body?.error?.reason ?? body?.message ?? error.message;
       const code = body?.error?.type ?? 'GATEWAY_ERROR';
-      Logger.warn(`Error con la pasarela [${status}]: ${reason}`, 'WompiPaymentGateway');
+      Logger.warn(`Error con la pasarela [${status}]: ${reason}`, 'PaymentGatewayAdapter');
       return new GatewayError(reason, code, status);
     }
     return new GatewayError(

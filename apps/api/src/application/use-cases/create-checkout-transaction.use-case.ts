@@ -180,7 +180,7 @@ export class CreateCheckoutTransactionUseCase {
     }
 
     transaction = await this.transactionRepository.update(
-      transaction.withWompiId(gatewayResult.value.id),
+      transaction.withGatewayTransactionId(gatewayResult.value.id),
     );
 
     return this.resolveOutcome(transaction, gatewayResult.value);
@@ -200,7 +200,7 @@ export class CreateCheckoutTransactionUseCase {
 
     while (result.status === 'PENDING' && attempts < this.maxPollingAttempts) {
       await delay(this.pollingIntervalMs);
-      const fetched = await this.paymentGateway.getTransaction(transaction.wompiTransactionId ?? '');
+      const fetched = await this.paymentGateway.getTransaction(transaction.gatewayTransactionId ?? '');
       if (fetched.isOk()) {
         result = fetched.value;
       }

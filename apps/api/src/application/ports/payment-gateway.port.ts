@@ -49,6 +49,6 @@ export abstract class PaymentGatewayPort {
     input: CreateGatewayTransactionInput,
   ): Promise<Result<GatewayTransactionResult, GatewayError>>;
   abstract getTransaction(
-    wompiTransactionId: string,
+    gatewayTransactionId: string,
   ): Promise<Result<GatewayTransactionResult, GatewayError>>;
 }

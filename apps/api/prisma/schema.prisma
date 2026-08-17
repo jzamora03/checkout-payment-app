@@ -83,7 +83,7 @@ model Delivery {
 model Transaction {
   id                 String            @id @default(uuid())
   reference          String            @unique
-  wompiTransactionId String?           @unique
+  gatewayTransactionId String?           @unique
   productId          String
   customerId         String
   deliveryId         String?           @unique

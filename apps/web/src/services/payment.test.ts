@@ -1,4 +1,4 @@
-import { tokenizeCard, TokenizationError } from './wompi';
+import { tokenizeCard, TokenizationError } from './payment';
 import { env } from '../env';
 
 describe('tokenizeCard', () => {

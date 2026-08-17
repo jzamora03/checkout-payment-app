@@ -53,7 +53,7 @@ const checkoutResponse = {
   transaction: {
     id: 'tx-1',
     reference: 'REF-1',
-    wompiTransactionId: 'wompi-1',
+    gatewayTransactionId: 'gateway-1',
     status: 'APPROVED' as const,
     statusMessage: 'ok',
     amountInCents: 100000,
