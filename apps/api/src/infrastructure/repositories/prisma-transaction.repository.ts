@@ -82,6 +82,7 @@ export class PrismaTransactionRepository implements TransactionRepositoryPort {
     customerEmail: string;
     ipAddress: string | null;
     status: string;
+    createdAt: Date;
   }): Transaction {
     return Transaction.create({
       id: model.id,
@@ -100,8 +101,9 @@ export class PrismaTransactionRepository implements TransactionRepositoryPort {
       paymentMethodType: model.paymentMethodType,
       cardBrand: model.cardBrand,
       cardLastFour: model.cardLastFour,
-      customerEmail: model.customerEmail,
+customerEmail: model.customerEmail,
       ipAddress: model.ipAddress,
+      createdAt: model.createdAt.toISOString(),
     });
   }
 }

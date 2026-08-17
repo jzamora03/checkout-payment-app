@@ -39,6 +39,10 @@ export class Customer {
     return this.props.documentNumber;
   }
 
+  get phone(): string | null {
+    return this.props.phone;
+  }
+
   get fullName(): string {
     return `${this.props.firstName} ${this.props.lastName}`.trim();
   }

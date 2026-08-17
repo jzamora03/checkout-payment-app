@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { ApiModule } from './api/api.module';
 import { ApplicationModule } from './application/application.module';
 import { validateEnv } from './config/env.validation';
 import { PrismaModule } from './infrastructure/prisma/prisma.module';
@@ -18,6 +19,7 @@ import { RepositoriesModule } from './infrastructure/repositories/repositories.m
     PrismaModule,
     RepositoriesModule,
     ApplicationModule,
+    ApiModule,
   ],
   providers: [
     {

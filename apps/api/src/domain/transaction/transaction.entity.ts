@@ -25,6 +25,7 @@ export interface TransactionProps {
   cardLastFour: string | null;
   customerEmail: string;
   ipAddress: string | null;
+  createdAt: string;
 }
 
 const FINAL_STATUSES: ReadonlySet<TransactionStatus> = new Set([
@@ -97,6 +98,10 @@ export class Transaction {
     return this.props.customerEmail;
   }
 
+  get createdAt(): string {
+    return this.props.createdAt;
+  }
+
   get isFinalized(): boolean {
     return FINAL_STATUSES.has(this.props.status);
   }
@@ -109,7 +114,7 @@ export class Transaction {
     return new Transaction({ ...this.props, wompiTransactionId });
   }
 
-  markApproved(message?: string): Transaction {
+  markApproved(message?: string | null): Transaction {
     if (this.isFinalized) {
       return this;
     }
@@ -120,7 +125,7 @@ export class Transaction {
     });
   }
 
-  markDeclined(message?: string): Transaction {
+  markDeclined(message?: string | null): Transaction {
     if (this.isFinalized) {
       return this;
     }
@@ -131,7 +136,7 @@ export class Transaction {
     });
   }
 
-  markError(message?: string): Transaction {
+  markError(message?: string | null): Transaction {
     if (this.isFinalized) {
       return this;
     }
