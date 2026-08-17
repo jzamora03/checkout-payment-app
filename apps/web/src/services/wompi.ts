@@ -1,8 +1,6 @@
+import { env } from '../env';
 import type { CardForm, TokenizedCard } from '../types';
 import { getCardBrand } from '../features/card/cardUtils';
-
-const PAYMENT_API_URL = import.meta.env.VITE_PAYMENT_API_URL;
-const PUBLIC_KEY = import.meta.env.VITE_PAYMENT_PUBLIC_KEY;
 
 export class TokenizationError extends Error {
   constructor(message: string) {
@@ -16,17 +14,19 @@ export class TokenizationError extends Error {
  * El PAN nunca viaja por nuestro backend.
  */
 export async function tokenizeCard(card: CardForm): Promise<TokenizedCard> {
-  if (!PAYMENT_API_URL || !PUBLIC_KEY) {
+  const paymentApiUrl = env.paymentApiUrl;
+  const publicKey = env.paymentPublicKey;
+  if (!paymentApiUrl || !publicKey) {
     throw new TokenizationError('La configuración de pagos no está disponible');
   }
 
   const [expMonth, expYear] = card.expiry.split('/');
 
-  const response = await fetch(`${PAYMENT_API_URL}/tokens/cards`, {
+  const response = await fetch(`${paymentApiUrl}/tokens/cards`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${PUBLIC_KEY}`,
+      Authorization: `Bearer ${publicKey}`,
     },
     body: JSON.stringify({
       number: card.number.replace(/\s/g, ''),

@@ -32,6 +32,7 @@ export interface CheckoutState extends CheckoutPersistState {
   processing: boolean;
   error: string | null;
   lastResponse: CheckoutResponse | null;
+  cardToken: string | null;
 }
 
 const initialState: CheckoutState = {
@@ -40,6 +41,7 @@ const initialState: CheckoutState = {
   customer: null,
   delivery: null,
   card: null,
+  cardToken: null,
   transactionReference: null,
   transactionStatus: null,
   requiresSync: false,
@@ -121,6 +123,7 @@ const checkoutSlice = createSlice({
       state.customer = null;
       state.delivery = null;
       state.card = null;
+      state.cardToken = null;
       state.transactionReference = null;
       state.transactionStatus = null;
       state.requiresSync = false;
@@ -135,6 +138,9 @@ const checkoutSlice = createSlice({
     },
     setCard: (state, action: PayloadAction<MaskedCard>) => {
       state.card = action.payload;
+    },
+    setCardToken: (state, action: PayloadAction<string>) => {
+      state.cardToken = action.payload;
     },
     goToSummary: (state) => {
       if (state.selectedProductId && state.customer && state.delivery && state.card) {
@@ -200,6 +206,7 @@ export const {
   setCustomer,
   setDelivery,
   setCard,
+  setCardToken,
   goToSummary,
   goToPayment,
   goToProduct,
