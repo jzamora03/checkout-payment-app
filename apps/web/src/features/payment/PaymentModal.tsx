@@ -1,5 +1,13 @@
 import { useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
+import IconButton from '@mui/material/IconButton';
+import Typography from '@mui/material/Typography';
+import Box from '@mui/material/Box';
+import Alert from '@mui/material/Alert';
+import LinearProgress from '@mui/material/LinearProgress';
+import CloseIcon from '@mui/icons-material/Close';
 import type { AppDispatch, RootState } from '../../app/store';
 import {
   goToProduct,
@@ -85,9 +93,7 @@ function PaymentModal() {
     const deliveryValid = isDeliveryValid(delivery);
 
     if (!customerValid || !deliveryValid) {
-      setGeneralError(
-        'Revisa los datos del cliente y de la entrega para continuar.',
-      );
+      setGeneralError('Revisa los datos del cliente y de la entrega para continuar.');
       return;
     }
 
@@ -118,45 +124,69 @@ function PaymentModal() {
   };
 
   return (
-    <div className="modal-overlay" role="dialog" aria-modal="true" aria-label="Pago con tarjeta">
-      <div className="modal-sheet">
-        <header className="modal-sheet__header">
-          <div>
-            <h2 className="modal-sheet__title">Pagar con tarjeta</h2>
-            <p className="modal-sheet__product">
-              {product.name} · {formatCurrency(totalInCents)}
-            </p>
-          </div>
-          <button
-            type="button"
-            className="icon-btn"
-            onClick={handleCancel}
-            aria-label="Cerrar"
-            data-testid="modal-close"
-          >
-            ×
-          </button>
-        </header>
+    <Dialog
+      open
+      fullWidth
+      maxWidth="sm"
+      onClose={handleCancel}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Pago con tarjeta"
+      slotProps={{
+        paper: {
+          sx: {
+            m: 0,
+            maxHeight: '92dvh',
+            borderRadius: '18px 18px 0 0',
+            '@media (min-width: 600px)': { borderRadius: '18px' },
+          },
+        },
+      }}
+    >
+      <Box sx={{ pt: 0.75, display: 'flex', justifyContent: 'center' }}>
+        <Box sx={{ width: 40, height: 4, borderRadius: 2, bgcolor: 'grey.300' }} />
+      </Box>
 
-        <div className="modal-sheet__body">
-          {generalError && (
-            <div className="alert alert--error" role="alert" data-testid="modal-error">
-              {generalError}
-            </div>
-          )}
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'flex-start',
+          justifyContent: 'space-between',
+          px: 2.5,
+          pb: 1,
+        }}
+      >
+        <Box>
+          <Typography variant="h6">Pagar con tarjeta</Typography>
+          <Typography variant="body2" color="text.secondary">
+            {product.name} · {formatCurrency(totalInCents)}
+          </Typography>
+        </Box>
+        <IconButton
+          aria-label="Cerrar"
+          onClick={handleCancel}
+          data-testid="modal-close"
+        >
+          <CloseIcon />
+        </IconButton>
+      </Box>
 
-          <CustomerForm initial={customer} onChange={setCustomerLocal} />
-          <CardForm initial={card} onValid={handleValidCard} onInvalid={() => setGeneralError(null)} />
-          <DeliveryForm initial={delivery} onChange={setDeliveryLocal} />
+      {generalError && (
+        <Box sx={{ px: 2.5 }}>
+          <Alert severity="error" data-testid="modal-error">
+            {generalError}
+          </Alert>
+        </Box>
+      )}
 
-          {submitting && (
-            <div className="modal-sheet__loading" role="status">
-              Validando tarjeta...
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
+      <DialogContent dividers sx={{ pt: 1.5 }}>
+        <CustomerForm initial={customer} onChange={setCustomerLocal} />
+        <CardForm initial={card} onValid={handleValidCard} />
+        <DeliveryForm initial={delivery} onChange={setDeliveryLocal} />
+      </DialogContent>
+
+      {submitting && <LinearProgress />}
+    </Dialog>
   );
 }
 

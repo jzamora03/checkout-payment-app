@@ -1,4 +1,9 @@
 import { useState } from 'react';
+import TextField from '@mui/material/TextField';
+import Grid from '@mui/material/Grid';
+import Typography from '@mui/material/Typography';
+import Box from '@mui/material/Box';
+import PersonIcon from '@mui/icons-material/Person';
 import type { CustomerForm as CustomerData } from '../../types';
 
 interface CustomerFormProps {
@@ -54,108 +59,125 @@ function CustomerForm({ initial, onChange }: CustomerFormProps) {
   };
 
   return (
-    <div className="customer-form">
-      <span className="form-section__title">Datos del cliente</span>
+    <Box component="section" sx={{ my: 1 }}>
+      <Typography
+        variant="overline"
+        sx={{ color: 'primary.main', display: 'flex', alignItems: 'center', gap: 0.5 }}
+      >
+        <PersonIcon fontSize="small" /> Datos del cliente
+      </Typography>
 
-      <label className="field">
-        <span className="field__label">Correo electrónico</span>
-        <input
-          type="email"
-          autoComplete="email"
-          placeholder="cliente@correo.com"
-          value={customer.email}
-          onChange={(e) => handleChange('email', e.target.value)}
-          onBlur={() => handleBlur('email')}
-          aria-invalid={touched.email && Boolean(errors.email)}
-          data-testid="customer-email"
-        />
-        {touched.email && errors.email && (
-          <span className="field__error">{errors.email}</span>
-        )}
-      </label>
+      <TextField
+        fullWidth
+        margin="dense"
+        type="email"
+        label="Correo electrónico"
+        placeholder="cliente@correo.com"
+        autoComplete="email"
+        value={customer.email}
+        onChange={(e) => handleChange('email', e.target.value)}
+        onBlur={() => handleBlur('email')}
+        error={touched.email && Boolean(errors.email)}
+        helperText={touched.email && errors.email ? errors.email : ' '}
+        slotProps={{
+          htmlInput: {
+            'data-testid': 'customer-email',
+            'aria-invalid': touched.email && Boolean(errors.email),
+          },
+        }}
+      />
 
-      <div className="form-row">
-        <label className="field">
-          <span className="field__label">Nombre</span>
-          <input
-            type="text"
-            autoComplete="given-name"
+      <Grid container spacing={1.5}>
+        <Grid size={{ xs: 6 }}>
+          <TextField
+            fullWidth
+            margin="dense"
+            label="Nombre"
             placeholder="Juan"
+            autoComplete="given-name"
             value={customer.firstName}
             onChange={(e) => handleChange('firstName', e.target.value)}
             onBlur={() => handleBlur('firstName')}
-            data-testid="customer-firstName"
+            error={touched.firstName && Boolean(errors.firstName)}
+            helperText={touched.firstName && errors.firstName ? errors.firstName : ' '}
+            slotProps={{
+              htmlInput: { 'data-testid': 'customer-firstName' },
+            }}
           />
-          {touched.firstName && errors.firstName && (
-            <span className="field__error">{errors.firstName}</span>
-          )}
-        </label>
-
-        <label className="field">
-          <span className="field__label">Apellido</span>
-          <input
-            type="text"
-            autoComplete="family-name"
+        </Grid>
+        <Grid size={{ xs: 6 }}>
+          <TextField
+            fullWidth
+            margin="dense"
+            label="Apellido"
             placeholder="Pérez"
+            autoComplete="family-name"
             value={customer.lastName}
             onChange={(e) => handleChange('lastName', e.target.value)}
             onBlur={() => handleBlur('lastName')}
-            data-testid="customer-lastName"
+            error={touched.lastName && Boolean(errors.lastName)}
+            helperText={touched.lastName && errors.lastName ? errors.lastName : ' '}
+            slotProps={{
+              htmlInput: { 'data-testid': 'customer-lastName' },
+            }}
           />
-          {touched.lastName && errors.lastName && (
-            <span className="field__error">{errors.lastName}</span>
-          )}
-        </label>
-      </div>
+        </Grid>
+      </Grid>
 
-      <div className="form-row">
-        <label className="field">
-          <span className="field__label">Tipo de documento</span>
-          <select
+      <Grid container spacing={1.5}>
+        <Grid size={{ xs: 6 }}>
+          <TextField
+            fullWidth
+            margin="dense"
+            select
+            label="Tipo de documento"
             value={customer.documentType}
             onChange={(e) => handleChange('documentType', e.target.value)}
-            data-testid="customer-documentType"
           >
             <option value="CC">Cédula de ciudadanía</option>
             <option value="CE">Cédula de extranjería</option>
             <option value="TI">Tarjeta de identidad</option>
             <option value="PASS">Pasaporte</option>
-          </select>
-        </label>
-
-        <label className="field">
-          <span className="field__label">Número de documento</span>
-          <input
-            type="text"
-            inputMode="numeric"
+          </TextField>
+        </Grid>
+        <Grid size={{ xs: 6 }}>
+          <TextField
+            fullWidth
+            margin="dense"
+            label="Número de documento"
             placeholder="1067981234"
+            inputMode="numeric"
             value={customer.documentNumber}
             onChange={(e) => handleChange('documentNumber', e.target.value.replace(/\D/g, ''))}
             onBlur={() => handleBlur('documentNumber')}
-            data-testid="customer-documentNumber"
+            error={touched.documentNumber && Boolean(errors.documentNumber)}
+            helperText={
+              touched.documentNumber && errors.documentNumber ? errors.documentNumber : ' '
+            }
+            slotProps={{
+              htmlInput: { 'data-testid': 'customer-documentNumber' },
+            }}
           />
-          {touched.documentNumber && errors.documentNumber && (
-            <span className="field__error">{errors.documentNumber}</span>
-          )}
-        </label>
-      </div>
+        </Grid>
+      </Grid>
 
-      <label className="field">
-        <span className="field__label">Teléfono</span>
-        <input
-          type="tel"
-          autoComplete="tel"
-          placeholder="300 123 4567"
-          value={customer.phone}
-          onChange={(e) => handleChange('phone', e.target.value)}
-          onBlur={() => handleBlur('phone')}
-          data-testid="customer-phone"
-        />
-        {touched.phone && errors.phone && (
-          <span className="field__error">{errors.phone}</span>
-        )}
-      </label>
-    </div>
+      <TextField
+        fullWidth
+        margin="dense"
+        type="tel"
+        label="Teléfono"
+        placeholder="300 123 4567"
+        autoComplete="tel"
+        value={customer.phone}
+        onChange={(e) => handleChange('phone', e.target.value)}
+        onBlur={() => handleBlur('phone')}
+        error={touched.phone && Boolean(errors.phone)}
+        helperText={touched.phone && errors.phone ? errors.phone : ' '}
+        slotProps={{
+          htmlInput: { 'data-testid': 'customer-phone' },
+        }}
+      />
+    </Box>
   );
 }
 

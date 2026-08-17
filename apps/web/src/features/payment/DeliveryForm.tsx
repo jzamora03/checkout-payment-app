@@ -1,4 +1,9 @@
 import { useState } from 'react';
+import TextField from '@mui/material/TextField';
+import Grid from '@mui/material/Grid';
+import Typography from '@mui/material/Typography';
+import Box from '@mui/material/Box';
+import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import type { DeliveryForm as DeliveryData } from '../../types';
 
 interface DeliveryFormProps {
@@ -45,110 +50,129 @@ function DeliveryForm({ initial, onChange }: DeliveryFormProps) {
   };
 
   return (
-    <div className="delivery-form">
-      <span className="form-section__title">Datos de entrega</span>
+    <Box component="section" sx={{ my: 1 }}>
+      <Typography
+        variant="overline"
+        sx={{ color: 'primary.main', display: 'flex', alignItems: 'center', gap: 0.5 }}
+      >
+        <LocalShippingIcon fontSize="small" /> Datos de entrega
+      </Typography>
 
-      <label className="field">
-        <span className="field__label">Dirección</span>
-        <input
-          type="text"
-          autoComplete="street-address"
-          placeholder="Calle 123 # 45-67"
-          value={delivery.addressLine1}
-          onChange={(e) => handleChange('addressLine1', e.target.value)}
-          onBlur={() => handleBlur('addressLine1')}
-          data-testid="delivery-address"
-        />
-        {touched.addressLine1 && errors.addressLine1 && (
-          <span className="field__error">{errors.addressLine1}</span>
-        )}
-      </label>
+      <TextField
+        fullWidth
+        margin="dense"
+        label="Dirección"
+        placeholder="Calle 123 # 45-67"
+        autoComplete="street-address"
+        value={delivery.addressLine1}
+        onChange={(e) => handleChange('addressLine1', e.target.value)}
+        onBlur={() => handleBlur('addressLine1')}
+        error={touched.addressLine1 && Boolean(errors.addressLine1)}
+        helperText={
+          touched.addressLine1 && errors.addressLine1 ? errors.addressLine1 : ' '
+        }
+        slotProps={{
+          htmlInput: { 'data-testid': 'delivery-address' },
+        }}
+      />
 
-      <label className="field">
-        <span className="field__label">Complemento (opcional)</span>
-        <input
-          type="text"
-          placeholder="Apto 301, torre B"
-          value={delivery.addressLine2}
-          onChange={(e) => handleChange('addressLine2', e.target.value)}
-          data-testid="delivery-address2"
-        />
-      </label>
+      <TextField
+        fullWidth
+        margin="dense"
+        label="Complemento (opcional)"
+        placeholder="Apto 301, torre B"
+        value={delivery.addressLine2}
+        onChange={(e) => handleChange('addressLine2', e.target.value)}
+        slotProps={{
+          htmlInput: { 'data-testid': 'delivery-address2' },
+        }}
+      />
 
-      <div className="form-row">
-        <label className="field">
-          <span className="field__label">Ciudad</span>
-          <input
-            type="text"
+      <Grid container spacing={1.5}>
+        <Grid size={{ xs: 6 }}>
+          <TextField
+            fullWidth
+            margin="dense"
+            label="Ciudad"
             placeholder="Bogotá"
             value={delivery.city}
             onChange={(e) => handleChange('city', e.target.value)}
             onBlur={() => handleBlur('city')}
-            data-testid="delivery-city"
+            error={touched.city && Boolean(errors.city)}
+            helperText={touched.city && errors.city ? errors.city : ' '}
+            slotProps={{
+              htmlInput: { 'data-testid': 'delivery-city' },
+            }}
           />
-          {touched.city && errors.city && (
-            <span className="field__error">{errors.city}</span>
-          )}
-        </label>
-
-        <label className="field">
-          <span className="field__label">Departamento</span>
-          <input
-            type="text"
+        </Grid>
+        <Grid size={{ xs: 6 }}>
+          <TextField
+            fullWidth
+            margin="dense"
+            label="Departamento"
             placeholder="Cundinamarca"
             value={delivery.state}
             onChange={(e) => handleChange('state', e.target.value)}
             onBlur={() => handleBlur('state')}
-            data-testid="delivery-state"
+            error={touched.state && Boolean(errors.state)}
+            helperText={touched.state && errors.state ? errors.state : ' '}
+            slotProps={{
+              htmlInput: { 'data-testid': 'delivery-state' },
+            }}
           />
-          {touched.state && errors.state && (
-            <span className="field__error">{errors.state}</span>
-          )}
-        </label>
-      </div>
+        </Grid>
+      </Grid>
 
-      <div className="form-row">
-        <label className="field">
-          <span className="field__label">Código postal</span>
-          <input
-            type="text"
-            inputMode="numeric"
+      <Grid container spacing={1.5}>
+        <Grid size={{ xs: 6 }}>
+          <TextField
+            fullWidth
+            margin="dense"
+            label="Código postal"
             placeholder="110111"
+            inputMode="numeric"
             value={delivery.postalCode}
             onChange={(e) => handleChange('postalCode', e.target.value)}
             onBlur={() => handleBlur('postalCode')}
-            data-testid="delivery-postal"
+            error={touched.postalCode && Boolean(errors.postalCode)}
+            helperText={
+              touched.postalCode && errors.postalCode ? errors.postalCode : ' '
+            }
+            slotProps={{
+              htmlInput: { 'data-testid': 'delivery-postal' },
+            }}
           />
-          {touched.postalCode && errors.postalCode && (
-            <span className="field__error">{errors.postalCode}</span>
-          )}
-        </label>
-
-        <label className="field">
-          <span className="field__label">País</span>
-          <select
+        </Grid>
+        <Grid size={{ xs: 6 }}>
+          <TextField
+            fullWidth
+            margin="dense"
+            select
+            label="País"
             value={delivery.country}
             onChange={(e) => handleChange('country', e.target.value)}
-            data-testid="delivery-country"
           >
             <option value="CO">Colombia</option>
             <option value="MX">México</option>
             <option value="US">Estados Unidos</option>
-          </select>
-        </label>
-      </div>
+          </TextField>
+        </Grid>
+      </Grid>
 
-      <label className="field">
-        <span className="field__label">Notas (opcional)</span>
-        <textarea
-          rows={2}
-          placeholder="Instrucciones de entrega"
-          value={delivery.notes}
-          onChange={(e) => handleChange('notes', e.target.value)}
-          data-testid="delivery-notes"
-        />
-      </label>
-    </div>
+      <TextField
+        fullWidth
+        margin="dense"
+        multiline
+        minRows={2}
+        label="Notas (opcional)"
+        placeholder="Instrucciones de entrega"
+        value={delivery.notes}
+        onChange={(e) => handleChange('notes', e.target.value)}
+        slotProps={{
+          htmlInput: { 'data-testid': 'delivery-notes' },
+        }}
+      />
+    </Box>
   );
 }
 

@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
@@ -65,22 +65,26 @@ function makeStore() {
   });
 }
 
-async function fillValidForm(user: ReturnType<typeof userEvent.setup>) {
-  await user.type(screen.getByTestId('customer-email'), 'cliente@test.com');
-  await user.type(screen.getByTestId('customer-firstName'), 'Juan');
-  await user.type(screen.getByTestId('customer-lastName'), 'Perez');
-  await user.type(screen.getByTestId('customer-documentNumber'), '1067981234');
-  await user.type(screen.getByTestId('customer-phone'), '3001234567');
+function fillField(testId: string, value: string) {
+  fireEvent.change(screen.getByTestId(testId), { target: { value } });
+}
 
-  await user.type(screen.getByTestId('card-number'), '4242424242424242');
-  await user.type(screen.getByTestId('card-holder'), 'Juan Perez');
-  await user.type(screen.getByTestId('card-expiry'), '12/99');
-  await user.type(screen.getByTestId('card-cvc'), '123');
+function fillValidForm() {
+  fillField('customer-email', 'cliente@test.com');
+  fillField('customer-firstName', 'Juan');
+  fillField('customer-lastName', 'Perez');
+  fillField('customer-documentNumber', '1067981234');
+  fillField('customer-phone', '3001234567');
 
-  await user.type(screen.getByTestId('delivery-address'), 'Calle 123 # 45-67');
-  await user.type(screen.getByTestId('delivery-city'), 'Bogota');
-  await user.type(screen.getByTestId('delivery-state'), 'Cundinamarca');
-  await user.type(screen.getByTestId('delivery-postal'), '110111');
+  fillField('card-number', '4242424242424242');
+  fillField('card-holder', 'Juan Perez');
+  fillField('card-expiry', '12/99');
+  fillField('card-cvc', '123');
+
+  fillField('delivery-address', 'Calle 123 # 45-67');
+  fillField('delivery-city', 'Bogota');
+  fillField('delivery-state', 'Cundinamarca');
+  fillField('delivery-postal', '110111');
 }
 
 describe('PaymentModal', () => {
@@ -132,7 +136,7 @@ describe('PaymentModal', () => {
       </Provider>,
     );
 
-    await fillValidForm(user);
+    fillValidForm();
     await user.click(screen.getByTestId('card-continue'));
 
     await waitFor(() => {
@@ -156,7 +160,7 @@ describe('PaymentModal', () => {
       </Provider>,
     );
 
-    await fillValidForm(user);
+    fillValidForm();
     await user.click(screen.getByTestId('card-continue'));
 
     expect(

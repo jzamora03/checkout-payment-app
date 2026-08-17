@@ -1,4 +1,10 @@
 import { useMemo, useState } from 'react';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
+import InputAdornment from '@mui/material/InputAdornment';
+import CreditCardIcon from '@mui/icons-material/CreditCard';
 import type { CardBrand, CardForm as CardFormData } from '../../types';
 import {
   formatCardNumber,
@@ -61,106 +67,142 @@ function CardForm({ initial, onValid }: CardFormProps) {
     }
   };
 
+  const field = (key: keyof CardFormData) => ({
+    error: touched[key] && Boolean(errors[key]),
+    helperText: touched[key] && errors[key] ? errors[key] : ' ',
+  });
+
   return (
-    <form onSubmit={handleSubmit} className="card-form" noValidate>
-      <div className="card-form__header">
-        <span className="card-form__title">Datos de la tarjeta</span>
-        <div className="card-brand-icons" aria-label="Tarjetas aceptadas">
-          <span
-            className={`card-brand card-brand--visa ${brand === 'visa' ? 'is-active' : ''}`}
+    <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }} noValidate>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 1,
+          mb: 1,
+        }}
+      >
+        <Typography
+          variant="overline"
+          sx={{ color: 'primary.main', display: 'flex', alignItems: 'center', gap: 0.5 }}
+        >
+          <CreditCardIcon fontSize="small" /> Datos de la tarjeta
+        </Typography>
+        <Box sx={{ display: 'flex', gap: 0.5 }} aria-label="Tarjetas aceptadas">
+          <Box
             data-testid="brand-visa"
+            className={`brand-logo brand-logo--visa ${brand === 'visa' ? 'is-active' : ''}`}
           >
             VISA
-          </span>
-          <span
-            className={`card-brand card-brand--mc ${brand === 'mastercard' ? 'is-active' : ''}`}
+          </Box>
+          <Box
             data-testid="brand-mastercard"
+            className={`brand-logo brand-logo--mc ${brand === 'mastercard' ? 'is-active' : ''}`}
           >
             Mastercard
-          </span>
-        </div>
-      </div>
+          </Box>
+        </Box>
+      </Box>
 
-      <label className="field">
-        <span className="field__label">Número de tarjeta</span>
-        <input
+      <TextField
+        fullWidth
+        margin="dense"
+        type="text"
+        inputMode="numeric"
+        autoComplete="cc-number"
+        label="Número de tarjeta"
+        placeholder="1234 5678 9012 3456"
+        value={card.number}
+        onChange={(e) => handleChange('number', e.target.value)}
+        onBlur={() => handleBlur('number')}
+        {...field('number')}
+        slotProps={{
+          htmlInput: {
+            'data-testid': 'card-number',
+            'aria-invalid': touched.number && Boolean(errors.number),
+          },
+        }}
+      />
+
+      <TextField
+        fullWidth
+        margin="dense"
+        label="Titular de la tarjeta"
+        placeholder="Nombre y apellido"
+        autoComplete="cc-name"
+        value={card.holder}
+        onChange={(e) => handleChange('holder', e.target.value)}
+        onBlur={() => handleBlur('holder')}
+        {...field('holder')}
+        slotProps={{
+          htmlInput: {
+            'data-testid': 'card-holder',
+            'aria-invalid': touched.holder && Boolean(errors.holder),
+          },
+        }}
+      />
+
+      <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.5 }}>
+        <TextField
+          fullWidth
+          margin="dense"
           type="text"
           inputMode="numeric"
-          autoComplete="cc-number"
-          placeholder="1234 5678 9012 3456"
-          value={card.number}
-          onChange={(e) => handleChange('number', e.target.value)}
-          onBlur={() => handleBlur('number')}
-          aria-invalid={touched.number && Boolean(errors.number)}
-          data-testid="card-number"
+          label="Vencimiento"
+          placeholder="MM/AA"
+          value={card.expiry}
+          onChange={(e) => handleChange('expiry', e.target.value)}
+          onBlur={() => handleBlur('expiry')}
+          {...field('expiry')}
+          slotProps={{
+            htmlInput: {
+              'data-testid': 'card-expiry',
+              'aria-invalid': touched.expiry && Boolean(errors.expiry),
+            },
+          }}
         />
-        {touched.number && errors.number && (
-          <span className="field__error">{errors.number}</span>
-        )}
-      </label>
-
-      <label className="field">
-        <span className="field__label">Titular de la tarjeta</span>
-        <input
-          type="text"
-          autoComplete="cc-name"
-          placeholder="Nombre y apellido"
-          value={card.holder}
-          onChange={(e) => handleChange('holder', e.target.value)}
-          onBlur={() => handleBlur('holder')}
-          aria-invalid={touched.holder && Boolean(errors.holder)}
-          data-testid="card-holder"
+        <TextField
+          fullWidth
+          margin="dense"
+          type="password"
+          inputMode="numeric"
+          autoComplete="cc-csc"
+          label="CVC"
+          placeholder="123"
+          value={card.cvc}
+          onChange={(e) => handleChange('cvc', e.target.value)}
+          onBlur={() => handleBlur('cvc')}
+          {...field('cvc')}
+          slotProps={{
+            htmlInput: {
+              'data-testid': 'card-cvc',
+              'aria-invalid': touched.cvc && Boolean(errors.cvc),
+            },
+            input: {
+              endAdornment: (
+                <InputAdornment position="end">🔒</InputAdornment>
+              ),
+            },
+          }}
         />
-        {touched.holder && errors.holder && (
-          <span className="field__error">{errors.holder}</span>
-        )}
-      </label>
+      </Box>
 
-      <div className="card-form__row">
-        <label className="field">
-          <span className="field__label">Vencimiento</span>
-          <input
-            type="text"
-            inputMode="numeric"
-            placeholder="MM/AA"
-            value={card.expiry}
-            onChange={(e) => handleChange('expiry', e.target.value)}
-            onBlur={() => handleBlur('expiry')}
-            aria-invalid={touched.expiry && Boolean(errors.expiry)}
-            data-testid="card-expiry"
-          />
-          {touched.expiry && errors.expiry && (
-            <span className="field__error">{errors.expiry}</span>
-          )}
-        </label>
-
-        <label className="field">
-          <span className="field__label">CVC</span>
-          <input
-            type="password"
-            inputMode="numeric"
-            autoComplete="cc-csc"
-            placeholder="123"
-            value={card.cvc}
-            onChange={(e) => handleChange('cvc', e.target.value)}
-            onBlur={() => handleBlur('cvc')}
-            aria-invalid={touched.cvc && Boolean(errors.cvc)}
-            data-testid="card-cvc"
-          />
-          {touched.cvc && errors.cvc && (
-            <span className="field__error">{errors.cvc}</span>
-          )}
-        </label>
-      </div>
-
-      <p className="card-form__note">
+      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1, mb: 2 }}>
         Solo usamos datos de prueba. Nada se cobra de verdad.
-      </p>
+      </Typography>
 
-      <button type="submit" className="btn btn--primary btn--block" data-testid="card-continue">
+      <Button
+        type="submit"
+        variant="contained"
+        color="primary"
+        fullWidth
+        size="large"
+        data-testid="card-continue"
+      >
         Continuar al resumen
-      </button>
-    </form>
+      </Button>
+    </Box>
   );
 }
 
