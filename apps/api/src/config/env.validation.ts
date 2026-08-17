@@ -27,7 +27,8 @@ export class EnvironmentVariables {
   @Max(65535)
   PORT: number;
 
-  @IsUrl({ require_tld: false })
+  @IsString()
+  @MinLength(10)
   DATABASE_URL: string;
 
   @IsUrl({ require_tld: false })
@@ -65,6 +66,19 @@ export class EnvironmentVariables {
   @IsUrl({ require_tld: false })
   @IsOptional()
   APP_URL?: string;
+
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  @Max(100)
+  @IsOptional()
+  PAYMENT_POLL_ATTEMPTS?: number;
+
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  @IsOptional()
+  PAYMENT_POLL_INTERVAL_MS?: number;
 }
 
 export function validateEnv(config: Record<string, unknown>): EnvironmentVariables {

@@ -5,6 +5,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { ApiModule } from './api/api.module';
 import { ApplicationModule } from './application/application.module';
 import { validateEnv } from './config/env.validation';
+import { PaymentModule } from './infrastructure/payment/payment.module';
 import { PrismaModule } from './infrastructure/prisma/prisma.module';
 import { RepositoriesModule } from './infrastructure/repositories/repositories.module';
 
@@ -19,6 +20,7 @@ import { RepositoriesModule } from './infrastructure/repositories/repositories.m
     PrismaModule,
     RepositoriesModule,
     ApplicationModule,
+    PaymentModule,
     ApiModule,
   ],
   providers: [
