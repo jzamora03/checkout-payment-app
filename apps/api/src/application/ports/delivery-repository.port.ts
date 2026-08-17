@@ -11,9 +11,9 @@ export interface SaveDeliveryInput {
   notes: string | null;
 }
 
-export interface DeliveryRepositoryPort {
-  create(input: SaveDeliveryInput): Promise<Delivery>;
-  assignTransaction(deliveryId: string, transactionId: string): Promise<Delivery>;
-  updateStatus(deliveryId: string, status: DeliveryStatus): Promise<Delivery>;
-  findById(id: string): Promise<Delivery | null>;
+export abstract class DeliveryRepositoryPort {
+  abstract create(input: SaveDeliveryInput): Promise<Delivery>;
+  abstract assignTransaction(deliveryId: string, transactionId: string): Promise<Delivery>;
+  abstract updateStatus(deliveryId: string, status: DeliveryStatus): Promise<Delivery>;
+  abstract findById(id: string): Promise<Delivery | null>;
 }

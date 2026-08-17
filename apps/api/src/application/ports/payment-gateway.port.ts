@@ -43,12 +43,12 @@ export interface GatewayTransactionResult {
   cardLastFour?: string | null;
 }
 
-export interface PaymentGatewayPort {
-  getAcceptanceToken(): Promise<Result<{ acceptanceToken: string }, GatewayError>>;
-  createTransaction(
+export abstract class PaymentGatewayPort {
+  abstract getAcceptanceToken(): Promise<Result<{ acceptanceToken: string }, GatewayError>>;
+  abstract createTransaction(
     input: CreateGatewayTransactionInput,
   ): Promise<Result<GatewayTransactionResult, GatewayError>>;
-  getTransaction(
+  abstract getTransaction(
     wompiTransactionId: string,
   ): Promise<Result<GatewayTransactionResult, GatewayError>>;
 }

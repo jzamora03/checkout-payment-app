@@ -9,7 +9,7 @@ export interface SaveCustomerInput {
   phone: string | null;
 }
 
-export interface CustomerRepositoryPort {
-  findByEmail(email: string): Promise<Customer | null>;
-  upsertByEmail(input: SaveCustomerInput): Promise<Customer>;
+export abstract class CustomerRepositoryPort {
+  abstract findByEmail(email: string): Promise<Customer | null>;
+  abstract upsertByEmail(input: SaveCustomerInput): Promise<Customer>;
 }
