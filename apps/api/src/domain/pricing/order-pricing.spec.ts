@@ -29,7 +29,14 @@ describe('OrderPricing (dominio)', () => {
     expect(result.isErr()).toBe(true);
   });
 
-  it('rechaza tarifas negativas', () => {
+  it('rechaza tarifas no enteras', () => {
+  const result = OrderPricing.build(100000, 3000.5, 0);
+  expect(result.isErr()).toBe(true);
+  const result2 = OrderPricing.build(100000, 0, 5000.5);
+  expect(result2.isErr()).toBe(true);
+});
+
+it('rechaza tarifas negativas', () => {
     const result = OrderPricing.build(100000, -1, 0);
     expect(result.isErr()).toBe(true);
     const result2 = OrderPricing.build(100000, 0, -1);

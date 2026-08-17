@@ -159,4 +159,19 @@ describe('WompiPaymentGateway', () => {
       }),
     );
   });
+
+  it('mapea errores que no son de axios como GATEWAY_ERROR', async () => {
+    mockHttp.post.mockRejectedValue(new Error('network down'));
+    const result = await gateway.createTransaction({
+      reference: 'REF-1',
+      amountInCents: 108000,
+      currency: 'COP',
+      customerEmail: 'c@test.com',
+      paymentMethod: { type: 'CARD', token: 'tok_1' },
+      acceptanceToken: 'acceptance-token',
+      signature: 'sig',
+    });
+    expect(result.isErr()).toBe(true);
+    expect(result._unsafeUnwrapErr().code).toBe('GATEWAY_ERROR');
+  });
 });

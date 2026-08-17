@@ -44,6 +44,30 @@ describe('Transaction (dominio)', () => {
     expect(tx.wompiTransactionId).toBeNull();
   });
 
+  it('usa mensajes por defecto cuando no se provee uno', () => {
+    const approved = makeTransaction().markApproved();
+    expect(approved.statusMessage).toBe('Transacción aprobada');
+
+    const declined = makeTransaction().markDeclined();
+    expect(declined.statusMessage).toBe('Transacción declinada');
+
+    const errored = makeTransaction().markError();
+    expect(errored.statusMessage).toContain('Error');
+  });
+
+  it('considera finales los estados APPROVED, DECLINED, ERROR y VOIDED', () => {
+    for (const status of [
+      TransactionStatus.APPROVED,
+      TransactionStatus.DECLINED,
+      TransactionStatus.ERROR,
+      TransactionStatus.VOIDED,
+    ]) {
+      const tx = makeTransaction({ status });
+      expect(tx.isFinalized).toBe(true);
+    }
+    expect(makeTransaction().isFinalized).toBe(false);
+  });
+
   it('expone el DTO completo', () => {
     const tx = makeTransaction({ totalInCents: 108000 });
     expect(tx.toDTO()).toMatchObject({

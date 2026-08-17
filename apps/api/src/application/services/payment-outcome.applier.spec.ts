@@ -140,4 +140,35 @@ describe('PaymentOutcomeApplier', () => {
     });
     expect(result.isErr()).toBe(true);
   });
+
+  it('aprueba sin entrega asociada (deliveryId nulo)', async () => {
+    const tx = makeTransaction({ deliveryId: null });
+    const result = await applier.apply(tx, {
+      id: 'wompi-1',
+      status: 'APPROVED',
+      statusMessage: 'ok',
+    });
+    expect(result.isOk()).toBe(true);
+    expect(deliveryRepository.assignTransaction).not.toHaveBeenCalled();
+  });
+
+  it('no modifica una transacción finalizada ante un DECLINED posterior', async () => {
+    const tx = makeTransaction({ status: TransactionStatus.APPROVED });
+    const result = await applier.apply(tx, {
+      id: 'wompi-1',
+      status: 'DECLINED',
+      statusMessage: 'tarde',
+    });
+    expect(result._unsafeUnwrap().status).toBe(TransactionStatus.APPROVED);
+  });
+
+  it('no modifica una transacción finalizada ante un ERROR posterior', async () => {
+    const tx = makeTransaction({ status: TransactionStatus.DECLINED });
+    const result = await applier.apply(tx, {
+      id: 'wompi-1',
+      status: 'ERROR',
+      statusMessage: 'tarde',
+    });
+    expect(result._unsafeUnwrap().status).toBe(TransactionStatus.DECLINED);
+  });
 });
