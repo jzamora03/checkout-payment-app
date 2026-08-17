@@ -1,30 +1,25 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import Alert from '@mui/material/Alert';
-import LinearProgress from '@mui/material/LinearProgress';
+import Stepper from '@mui/material/Stepper';
+import Step from '@mui/material/Step';
+import StepLabel from '@mui/material/StepLabel';
 import CloseIcon from '@mui/icons-material/Close';
+import PersonIcon from '@mui/icons-material/Person';
+import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import type { AppDispatch, RootState } from '../../app/store';
-import {
-  goToProduct,
-  goToSummary,
-  setCard,
-  setCardToken,
-  setCustomer,
-  setDelivery,
-} from '../checkout/checkoutSlice';
-import { tokenizeCard, TokenizationError } from '../../services/wompi';
+import { goToProduct, goToSummary, setCustomer, setDelivery } from '../checkout/checkoutSlice';
 import type {
-  CardForm as CardData,
   CustomerForm as CustomerData,
   DeliveryForm as DeliveryData,
 } from '../../types';
 import { formatCurrency } from '../../utils/format';
-import CardForm from './CardForm';
 import CustomerForm, { isCustomerValid } from './CustomerForm';
 import DeliveryForm, { isDeliveryValid } from './DeliveryForm';
 
@@ -51,6 +46,8 @@ function emptyDelivery(): DeliveryData {
   };
 }
 
+const STEPS = ['Datos del cliente', 'Datos de entrega'];
+
 function PaymentModal() {
   const dispatch = useDispatch<AppDispatch>();
   const product = useSelector((state: RootState) => {
@@ -59,25 +56,14 @@ function PaymentModal() {
   });
   const persisted = useSelector((state: RootState) => state.checkout);
 
+  const [wizardStep, setWizardStep] = useState(0);
   const [customer, setCustomerLocal] = useState<CustomerData>(
     persisted.customer ?? emptyCustomer(),
   );
   const [delivery, setDeliveryLocal] = useState<DeliveryData>(
     persisted.delivery ?? emptyDelivery(),
   );
-  const [card] = useState<CardData>(() => ({
-    number: '',
-    holder: persisted.card?.holder ?? '',
-    expiry: persisted.card?.expiry ?? '',
-    cvc: '',
-  }));
   const [generalError, setGeneralError] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
-
-  const totalInCents = useMemo(
-    () => (product ? product.priceInCents + 3000 + 5000 : 0),
-    [product],
-  );
 
   if (!product) {
     return null;
@@ -87,40 +73,29 @@ function PaymentModal() {
     dispatch(goToProduct());
   };
 
-  const handleValidCard = async (validCard: CardData) => {
+  const handleNextCustomer = () => {
     setGeneralError(null);
-    const customerValid = isCustomerValid(customer);
-    const deliveryValid = isDeliveryValid(delivery);
-
-    if (!customerValid || !deliveryValid) {
-      setGeneralError('Revisa los datos del cliente y de la entrega para continuar.');
+    if (!isCustomerValid(customer)) {
+      setGeneralError('Revisa los datos del cliente para continuar.');
       return;
     }
+    dispatch(setCustomer(customer));
+    setWizardStep(1);
+  };
 
-    setSubmitting(true);
-    try {
-      const token = await tokenizeCard(validCard);
-      dispatch(setCustomer(customer));
-      dispatch(setDelivery(delivery));
-      dispatch(
-        setCard({
-          brand: token.brand,
-          lastFour: token.lastFour,
-          holder: validCard.holder,
-          expiry: validCard.expiry,
-        }),
-      );
-      dispatch(setCardToken(token.id));
-      dispatch(goToSummary());
-    } catch (error) {
-      if (error instanceof TokenizationError) {
-        setGeneralError(error.message);
-      } else {
-        setGeneralError('No fue posible validar la tarjeta. Intenta de nuevo.');
-      }
-    } finally {
-      setSubmitting(false);
+  const handleNextDelivery = () => {
+    setGeneralError(null);
+    if (!isDeliveryValid(delivery)) {
+      setGeneralError('Revisa los datos de la entrega para continuar.');
+      return;
     }
+    dispatch(setDelivery(delivery));
+    dispatch(goToSummary());
+  };
+
+  const handleBack = () => {
+    setGeneralError(null);
+    setWizardStep(0);
   };
 
   return (
@@ -131,7 +106,7 @@ function PaymentModal() {
       onClose={handleCancel}
       role="dialog"
       aria-modal="true"
-      aria-label="Pago con tarjeta"
+      aria-label="Checkout paso a paso"
       slotProps={{
         paper: {
           sx: {
@@ -159,16 +134,22 @@ function PaymentModal() {
         <Box>
           <Typography variant="h6">Pagar con tarjeta</Typography>
           <Typography variant="body2" color="text.secondary">
-            {product.name} · {formatCurrency(totalInCents)}
+            {product.name} · {formatCurrency(product.priceInCents + 3000 + 5000)}
           </Typography>
         </Box>
-        <IconButton
-          aria-label="Cerrar"
-          onClick={handleCancel}
-          data-testid="modal-close"
-        >
+        <IconButton aria-label="Cerrar" onClick={handleCancel} data-testid="modal-close">
           <CloseIcon />
         </IconButton>
+      </Box>
+
+      <Box sx={{ px: 2.5, pb: 1 }}>
+        <Stepper activeStep={wizardStep} alternativeLabel>
+          {STEPS.map((label) => (
+            <Step key={label}>
+              <StepLabel>{label}</StepLabel>
+            </Step>
+          ))}
+        </Stepper>
       </Box>
 
       {generalError && (
@@ -180,12 +161,49 @@ function PaymentModal() {
       )}
 
       <DialogContent dividers sx={{ pt: 1.5 }}>
-        <CustomerForm initial={customer} onChange={setCustomerLocal} />
-        <CardForm initial={card} onValid={handleValidCard} />
-        <DeliveryForm initial={delivery} onChange={setDeliveryLocal} />
+        {wizardStep === 0 ? (
+          <Box data-testid="step-customer">
+            <CustomerForm initial={customer} onChange={setCustomerLocal} />
+            <Button
+              variant="contained"
+              color="primary"
+              fullWidth
+              size="large"
+              sx={{ mt: 1 }}
+              startIcon={<PersonIcon />}
+              onClick={handleNextCustomer}
+              data-testid="step-customer-next"
+            >
+              Continuar
+            </Button>
+          </Box>
+        ) : (
+          <Box data-testid="step-delivery">
+            <DeliveryForm initial={delivery} onChange={setDeliveryLocal} />
+            <Box sx={{ display: 'flex', gap: 1.5, mt: 1 }}>
+              <Button
+                variant="outlined"
+                color="inherit"
+                onClick={handleBack}
+                data-testid="step-delivery-back"
+              >
+                Atrás
+              </Button>
+              <Button
+                variant="contained"
+                color="primary"
+                fullWidth
+                size="large"
+                startIcon={<LocalShippingIcon />}
+                onClick={handleNextDelivery}
+                data-testid="step-delivery-next"
+              >
+                Continuar al resumen
+              </Button>
+            </Box>
+          </Box>
+        )}
       </DialogContent>
-
-      {submitting && <LinearProgress />}
     </Dialog>
   );
 }

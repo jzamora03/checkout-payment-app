@@ -17,9 +17,16 @@ interface CardFormProps {
   initial: CardFormData;
   onValid: (card: CardFormData) => void;
   onInvalid?: () => void;
+  submitLabel?: string;
+  disabled?: boolean;
 }
 
-function CardForm({ initial, onValid }: CardFormProps) {
+function CardForm({
+  initial,
+  onValid,
+  submitLabel = 'Continuar al resumen',
+  disabled = false,
+}: CardFormProps) {
   const [card, setCard] = useState<CardFormData>(initial);
   const [errors, setErrors] = useState<Record<string, string | null>>({
     number: null,
@@ -198,9 +205,10 @@ function CardForm({ initial, onValid }: CardFormProps) {
         color="primary"
         fullWidth
         size="large"
+        disabled={disabled}
         data-testid="card-continue"
       >
-        Continuar al resumen
+        {submitLabel}
       </Button>
     </Box>
   );

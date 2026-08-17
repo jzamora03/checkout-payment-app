@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import Backdrop from '@mui/material/Backdrop';
 import Paper from '@mui/material/Paper';
@@ -6,15 +7,22 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
+import Alert from '@mui/material/Alert';
 import CloseIcon from '@mui/icons-material/Close';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+import LockIcon from '@mui/icons-material/Lock';
 import type { AppDispatch, RootState } from '../../app/store';
 import {
   goToPayment,
   goToProduct,
+  setCard,
+  setCardToken,
   submitPayment,
 } from '../checkout/checkoutSlice';
+import { tokenizeCard, TokenizationError } from '../../services/wompi';
+import type { CardForm as CardData } from '../../types';
 import { formatCurrency } from '../../utils/format';
+import CardForm from '../payment/CardForm';
 
 function SummaryBackdrop() {
   const dispatch = useDispatch<AppDispatch>();
@@ -23,7 +31,16 @@ function SummaryBackdrop() {
     state.products.products.find((item) => item.id === state.checkout.selectedProductId),
   );
 
-  if (!product || !checkout.customer || !checkout.delivery || !checkout.card) {
+  const [card] = useState<CardData>(() => ({
+    number: '',
+    holder: checkout.card?.holder ?? '',
+    expiry: checkout.card?.expiry ?? '',
+    cvc: '',
+  }));
+  const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  if (!product || !checkout.customer || !checkout.delivery) {
     return null;
   }
 
@@ -31,12 +48,22 @@ function SummaryBackdrop() {
   const deliveryFee = 5000;
   const total = product.priceInCents + baseFee + deliveryFee;
 
-  const handlePay = () => {
-    if (!checkout.cardToken) {
-      dispatch(goToPayment());
-      return;
+  const handlePay = async (validCard: CardData) => {
+    setPaymentError(null);
+    setSubmitting(true);
+    try {
+      const token = await tokenizeCard(validCard);
+      dispatch(setCard({ brand: token.brand, lastFour: token.lastFour, holder: validCard.holder, expiry: validCard.expiry }));
+      dispatch(setCardToken(token.id));
+      void dispatch(submitPayment({ cardToken: token.id }));
+    } catch (error) {
+      if (error instanceof TokenizationError) {
+        setPaymentError(error.message);
+      } else {
+        setPaymentError('No fue posible validar la tarjeta. Intenta de nuevo.');
+      }
+      setSubmitting(false);
     }
-    void dispatch(submitPayment({ cardToken: checkout.cardToken }));
   };
 
   return (
@@ -45,7 +72,7 @@ function SummaryBackdrop() {
       sx={{ zIndex: 50, backdropFilter: 'blur(4px)', alignItems: 'flex-end', justifyContent: 'center' }}
       role="dialog"
       aria-modal="true"
-      aria-label="Resumen del pago"
+      aria-label="Resumen y pago"
       data-testid="summary-backdrop"
     >
       <Paper
@@ -71,7 +98,12 @@ function SummaryBackdrop() {
             borderColor: 'divider',
           }}
         >
-          <Typography variant="h6">Resumen de tu compra</Typography>
+          <Box>
+            <Typography variant="h6">Resumen y pago</Typography>
+            <Typography variant="body2" color="text.secondary">
+              Revisa tu compra y completa la tarjeta
+            </Typography>
+          </Box>
           <IconButton
             aria-label="Cerrar"
             onClick={() => dispatch(goToProduct())}
@@ -89,7 +121,14 @@ function SummaryBackdrop() {
               </Typography>
               <Box
                 component="span"
-                sx={{ fontSize: '0.75rem', color: 'text.secondary', bgcolor: 'rgba(79, 70, 229, 0.1)', px: 1, py: 0.25, borderRadius: 999 }}
+                sx={{
+                  fontSize: '0.75rem',
+                  color: 'text.secondary',
+                  bgcolor: 'rgba(79, 70, 229, 0.1)',
+                  px: 1,
+                  py: 0.25,
+                  borderRadius: 999,
+                }}
               >
                 ×1
               </Box>
@@ -134,45 +173,44 @@ function SummaryBackdrop() {
             </Typography>
           </Box>
 
-          <Box sx={{ py: 1 }}>
-            <Typography variant="caption" color="text.secondary">
-              Tarjeta
-            </Typography>
-            <Typography variant="body2" sx={{ mt: 0.5 }} data-testid="summary-card">
-              {checkout.card.brand.toUpperCase()} •••• {checkout.card.lastFour}
-            </Typography>
-          </Box>
-
-          {checkout.error && (
-            <Box sx={{ py: 1 }} data-testid="summary-error">
-              <Typography variant="body2" color="error">
-                {checkout.error}
-              </Typography>
-            </Box>
-          )}
+          <Divider />
 
           {!checkout.cardToken && (
-            <Box sx={{ py: 1 }} data-testid="summary-reentry">
-              <Typography variant="body2" color="text.secondary">
-                Tu tarjeta se invalidó al recargar. Vuelve a ingresarla para continuar.
-              </Typography>
-            </Box>
+            <Alert severity="info" icon={false} sx={{ mt: 1, fontSize: '0.8rem' }} data-testid="summary-reentry">
+              Ingresa los datos de tu tarjeta para pagar.
+            </Alert>
           )}
+
+          {paymentError && (
+            <Alert severity="error" sx={{ mt: 1, fontSize: '0.85rem' }} data-testid="summary-error">
+              {paymentError}
+            </Alert>
+          )}
+
+          {checkout.error && (
+            <Alert severity="error" sx={{ mt: 1, fontSize: '0.85rem' }} data-testid="checkout-error">
+              {checkout.error}
+            </Alert>
+          )}
+
+          <CardForm
+            initial={card}
+            onValid={handlePay}
+            submitLabel={`Pagar ${formatCurrency(total)}`}
+            disabled={submitting}
+          />
+
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5, py: 1 }}>
+            <LockIcon fontSize="small" color="disabled" />
+            <Typography variant="caption" color="text.secondary">
+              Pago seguro en ambiente de pruebas (sandbox)
+            </Typography>
+          </Box>
         </Box>
 
-        <Box sx={{ display: 'flex', gap: 1.5, p: 2, borderTop: 1, borderColor: 'divider' }}>
-          <Button variant="outlined" color="inherit" onClick={() => dispatch(goToPayment())}>
+        <Box sx={{ p: 2, borderTop: 1, borderColor: 'divider', display: 'flex', justifyContent: 'center' }}>
+          <Button variant="text" color="inherit" onClick={() => dispatch(goToPayment())}>
             Editar datos
-          </Button>
-          <Button
-            variant="contained"
-            color="primary"
-            fullWidth
-            disabled={!checkout.cardToken || checkout.processing}
-            onClick={handlePay}
-            data-testid="summary-pay"
-          >
-            Pagar {formatCurrency(total)}
           </Button>
         </Box>
       </Paper>

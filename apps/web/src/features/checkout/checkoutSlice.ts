@@ -143,7 +143,7 @@ const checkoutSlice = createSlice({
       state.cardToken = action.payload;
     },
     goToSummary: (state) => {
-      if (state.selectedProductId && state.customer && state.delivery && state.card) {
+      if (state.selectedProductId && state.customer && state.delivery) {
         state.step = 'summary';
       }
     },
