@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import SummaryBackdrop from './SummaryBackdrop';
-import productsReducer from '../products/productsSlice';
+import productsReducer, { ProductsState } from '../products/productsSlice';
 import checkoutReducer from '../checkout/checkoutSlice';
 import type { RootState } from '../../app/store';
 
@@ -27,43 +27,49 @@ const product = {
 };
 
 function makeStore(overrides: Partial<RootState['checkout']> = {}) {
+  const defaultProducts: ProductsState = {
+    products: [product],
+    status: 'succeeded',
+    error: null,
+  };
+  const defaultCheckout: RootState['checkout'] = {
+    step: 'summary',
+    selectedProductId: 'product-1',
+    customer: {
+      email: 'cliente@test.com',
+      firstName: 'Juan',
+      lastName: 'Perez',
+      documentType: 'CC',
+      documentNumber: '1067981234',
+      phone: '3001234567',
+    },
+    delivery: {
+      addressLine1: 'Calle 123 # 45-67',
+      addressLine2: '',
+      city: 'Bogota',
+      state: 'Cundinamarca',
+      postalCode: '110111',
+      country: 'CO',
+      notes: '',
+    },
+    card: { brand: 'visa', lastFour: '4242', holder: 'Juan Perez', expiry: '12/99' },
+    cardToken: 'tok_123',
+    transactionReference: null,
+    transactionStatus: null,
+    requiresSync: false,
+    processing: false,
+    error: null,
+    lastResponse: null,
+  };
+
   return configureStore({
     reducer: {
       products: productsReducer,
       checkout: checkoutReducer,
     },
     preloadedState: {
-      products: { products: [product], status: 'succeeded', error: null },
-      checkout: {
-        step: 'summary',
-        selectedProductId: 'product-1',
-        customer: {
-          email: 'cliente@test.com',
-          firstName: 'Juan',
-          lastName: 'Perez',
-          documentType: 'CC',
-          documentNumber: '1067981234',
-          phone: '3001234567',
-        },
-        delivery: {
-          addressLine1: 'Calle 123 # 45-67',
-          addressLine2: '',
-          city: 'Bogota',
-          state: 'Cundinamarca',
-          postalCode: '110111',
-          country: 'CO',
-          notes: '',
-        },
-        card: { brand: 'visa', lastFour: '4242', holder: 'Juan Perez', expiry: '12/99' },
-        cardToken: 'tok_123',
-        transactionReference: null,
-        transactionStatus: null,
-        requiresSync: false,
-        processing: false,
-        error: null,
-        lastResponse: null,
-        ...overrides,
-      },
+      products: defaultProducts,
+      checkout: { ...defaultCheckout, ...overrides },
     },
   });
 }

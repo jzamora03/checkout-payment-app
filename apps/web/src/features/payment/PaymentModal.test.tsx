@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import PaymentModal from './PaymentModal';
-import productsReducer from '../products/productsSlice';
+import productsReducer, { ProductsState } from '../products/productsSlice';
 import checkoutReducer from '../checkout/checkoutSlice';
 import type { RootState } from '../../app/store';
 import { TokenizationError } from '../../services/wompi';
@@ -33,27 +33,34 @@ const product = {
 };
 
 function makeStore() {
+  const defaultCheckout: RootState['checkout'] = {
+    step: 'payment',
+    selectedProductId: 'product-1',
+    customer: null,
+    delivery: null,
+    card: null,
+    cardToken: null,
+    transactionReference: null,
+    transactionStatus: null,
+    requiresSync: false,
+    processing: false,
+    error: null,
+    lastResponse: null,
+  };
+  const defaultProducts: ProductsState = {
+    products: [product],
+    status: 'succeeded',
+    error: null,
+  };
+
   return configureStore({
     reducer: {
       products: productsReducer,
       checkout: checkoutReducer,
     },
     preloadedState: {
-      products: { products: [product], status: 'succeeded', error: null },
-      checkout: {
-        step: 'payment',
-        selectedProductId: 'product-1',
-        customer: null,
-        delivery: null,
-        card: null,
-        cardToken: null,
-        transactionReference: null,
-        transactionStatus: null,
-        requiresSync: false,
-        processing: false,
-        error: null,
-        lastResponse: null,
-      },
+      products: defaultProducts,
+      checkout: defaultCheckout,
     },
   });
 }

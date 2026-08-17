@@ -1,6 +1,7 @@
 import { configureStore } from '@reduxjs/toolkit';
 import { store as appStore } from './store';
 import checkoutReducer, {
+  CheckoutPersistState,
   loadCheckoutState,
   persistCheckoutState,
   startCheckout,
@@ -27,13 +28,12 @@ describe('store / persistencia', () => {
   });
 
   it('recupera el estado guardado al rehidratar', () => {
-    const persisted = {
+    const persisted: CheckoutPersistState = {
       step: 'summary',
       selectedProductId: 'product-1',
       customer: null,
       delivery: null,
       card: { brand: 'visa', lastFour: '4242', holder: 'Juan', expiry: '12/99' },
-      cardToken: null,
       transactionReference: null,
       transactionStatus: null,
       requiresSync: false,

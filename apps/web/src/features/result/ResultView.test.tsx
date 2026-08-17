@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import ResultView from './ResultView';
-import productsReducer from '../products/productsSlice';
+import productsReducer, { ProductsState } from '../products/productsSlice';
 import checkoutReducer from '../checkout/checkoutSlice';
 import type { RootState } from '../../app/store';
 
@@ -66,28 +66,34 @@ const response = {
 };
 
 function makeStore(overrides: Partial<RootState['checkout']> = {}) {
+  const defaultProducts: ProductsState = {
+    products: [],
+    status: 'idle',
+    error: null,
+  };
+  const defaultCheckout: RootState['checkout'] = {
+    step: 'result',
+    selectedProductId: null,
+    customer: null,
+    delivery: null,
+    card: null,
+    cardToken: null,
+    transactionReference: 'REF-123',
+    transactionStatus: 'APPROVED',
+    requiresSync: false,
+    processing: false,
+    error: null,
+    lastResponse: response,
+  };
+
   return configureStore({
     reducer: {
       products: productsReducer,
       checkout: checkoutReducer,
     },
     preloadedState: {
-      products: { products: [], status: 'idle', error: null },
-      checkout: {
-        step: 'result',
-        selectedProductId: null,
-        customer: null,
-        delivery: null,
-        card: null,
-        cardToken: null,
-        transactionReference: 'REF-123',
-        transactionStatus: 'APPROVED',
-        requiresSync: false,
-        processing: false,
-        error: null,
-        lastResponse: response,
-        ...overrides,
-      },
+      products: defaultProducts,
+      checkout: { ...defaultCheckout, ...overrides },
     },
   });
 }
