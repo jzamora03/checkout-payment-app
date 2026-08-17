@@ -11,6 +11,16 @@ describe('CardForm', () => {
     expect(screen.getByTestId('brand-mastercard')).toBeInTheDocument();
   });
 
+  it('usa el submitLabel personalizado en el botón', () => {
+    render(<CardForm initial={emptyCard} onValid={jest.fn()} submitLabel="Pagar $2.579" />);
+    expect(screen.getByRole('button', { name: 'Pagar $2.579' })).toBeInTheDocument();
+  });
+
+  it('respeta la prop disabled', () => {
+    render(<CardForm initial={emptyCard} onValid={jest.fn()} disabled />);
+    expect(screen.getByTestId('card-continue')).toBeDisabled();
+  });
+
   it('activa el logo de la franquicia detectada', async () => {
     const user = userEvent.setup();
     render(<CardForm initial={emptyCard} onValid={jest.fn()} />);

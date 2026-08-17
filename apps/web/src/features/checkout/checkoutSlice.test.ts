@@ -113,17 +113,17 @@ describe('checkoutSlice', () => {
     expect(state.card?.lastFour).toBe('4242');
   });
 
-  it('va al resumen solo cuando hay datos completos', () => {
+  it('va al resumen con cliente y entrega (la tarjeta se ingresa en el resumen)', () => {
     const store = makeStore();
     store.dispatch(startCheckout('product-1'));
     store.dispatch(goToSummary());
     expect(store.getState().checkout.step).toBe('payment');
 
     store.dispatch(setCustomer(customer));
+    store.dispatch(goToSummary());
+    expect(store.getState().checkout.step).toBe('payment');
+
     store.dispatch(setDelivery(delivery));
-    store.dispatch(
-      setCard({ brand: 'visa', lastFour: '4242', holder: 'Juan', expiry: '12/99' }),
-    );
     store.dispatch(goToSummary());
     expect(store.getState().checkout.step).toBe('summary');
   });

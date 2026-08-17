@@ -1,24 +1,10 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import PaymentModal from './PaymentModal';
 import productsReducer, { ProductsState } from '../products/productsSlice';
 import checkoutReducer from '../checkout/checkoutSlice';
 import type { RootState } from '../../app/store';
-import { TokenizationError } from '../../services/wompi';
-
-jest.mock('../../services/wompi', () => ({
-  tokenizeCard: jest.fn(),
-  TokenizationError: class extends Error {
-    constructor(message: string) {
-      super(message);
-      this.name = 'TokenizationError';
-    }
-  },
-}));
-
-import { tokenizeCard } from '../../services/wompi';
 
 const product = {
   id: 'product-1',
@@ -65,39 +51,23 @@ function makeStore() {
   });
 }
 
-function fillField(testId: string, value: string) {
-  fireEvent.change(screen.getByTestId(testId), { target: { value } });
+function fillCustomer() {
+  fireEvent.change(screen.getByTestId('customer-email'), { target: { value: 'cliente@test.com' } });
+  fireEvent.change(screen.getByTestId('customer-firstName'), { target: { value: 'Juan' } });
+  fireEvent.change(screen.getByTestId('customer-lastName'), { target: { value: 'Perez' } });
+  fireEvent.change(screen.getByTestId('customer-documentNumber'), { target: { value: '1067981234' } });
+  fireEvent.change(screen.getByTestId('customer-phone'), { target: { value: '3001234567' } });
 }
 
-function fillValidForm() {
-  fillField('customer-email', 'cliente@test.com');
-  fillField('customer-firstName', 'Juan');
-  fillField('customer-lastName', 'Perez');
-  fillField('customer-documentNumber', '1067981234');
-  fillField('customer-phone', '3001234567');
-
-  fillField('card-number', '4242424242424242');
-  fillField('card-holder', 'Juan Perez');
-  fillField('card-expiry', '12/99');
-  fillField('card-cvc', '123');
-
-  fillField('delivery-address', 'Calle 123 # 45-67');
-  fillField('delivery-city', 'Bogota');
-  fillField('delivery-state', 'Cundinamarca');
-  fillField('delivery-postal', '110111');
+function fillDelivery() {
+  fireEvent.change(screen.getByTestId('delivery-address'), { target: { value: 'Calle 123 # 45-67' } });
+  fireEvent.change(screen.getByTestId('delivery-city'), { target: { value: 'Bogota' } });
+  fireEvent.change(screen.getByTestId('delivery-state'), { target: { value: 'Cundinamarca' } });
+  fireEvent.change(screen.getByTestId('delivery-postal'), { target: { value: '110111' } });
 }
 
-describe('PaymentModal', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-    (tokenizeCard as jest.Mock).mockResolvedValue({
-      id: 'tok_123',
-      brand: 'VISA',
-      lastFour: '4242',
-    });
-  });
-
-  it('muestra el producto seleccionado', () => {
+describe('PaymentModal (wizard)', () => {
+  it('muestra el producto seleccionado y el primer paso', () => {
     render(
       <Provider store={makeStore()}>
         <PaymentModal />
@@ -105,72 +75,73 @@ describe('PaymentModal', () => {
     );
     expect(screen.getByText('Pagar con tarjeta')).toBeInTheDocument();
     expect(screen.getByText(/Auriculares Pro/)).toBeInTheDocument();
+    expect(screen.getByTestId('step-customer')).toBeInTheDocument();
   });
 
-  it('muestra error si faltan datos de cliente o entrega', async () => {
-    const user = userEvent.setup();
+  it('muestra error si faltan datos del cliente', () => {
     render(
       <Provider store={makeStore()}>
         <PaymentModal />
       </Provider>,
     );
-
-    await user.type(screen.getByTestId('card-number'), '4242424242424242');
-    await user.type(screen.getByTestId('card-holder'), 'Juan Perez');
-    await user.type(screen.getByTestId('card-expiry'), '12/99');
-    await user.type(screen.getByTestId('card-cvc'), '123');
-    await user.click(screen.getByTestId('card-continue'));
-
-    expect(
-      await screen.findByText('Revisa los datos del cliente y de la entrega para continuar.'),
-    ).toBeInTheDocument();
-    expect(tokenizeCard).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByTestId('step-customer-next'));
+    expect(screen.getByTestId('modal-error')).toHaveTextContent(
+      'Revisa los datos del cliente para continuar.',
+    );
+    expect(screen.getByTestId('step-customer')).toBeInTheDocument();
   });
 
-  it('tokeniza la tarjeta y avanza al resumen con datos válidos', async () => {
-    const user = userEvent.setup();
+  it('navega al paso de entrega y permite volver atrás', () => {
     const store = makeStore();
     render(
       <Provider store={store}>
         <PaymentModal />
       </Provider>,
     );
+    fillCustomer();
+    fireEvent.click(screen.getByTestId('step-customer-next'));
 
-    fillValidForm();
-    await user.click(screen.getByTestId('card-continue'));
+    expect(screen.getByTestId('step-delivery')).toBeInTheDocument();
 
-    await waitFor(() => {
-      expect(tokenizeCard).toHaveBeenCalledTimes(1);
-    });
+    fireEvent.click(screen.getByTestId('step-delivery-back'));
+    expect(screen.getByTestId('step-customer')).toBeInTheDocument();
+  });
+
+  it('guarda cliente y entrega y avanza al resumen', () => {
+    const store = makeStore();
+    render(
+      <Provider store={store}>
+        <PaymentModal />
+      </Provider>,
+    );
+    fillCustomer();
+    fireEvent.click(screen.getByTestId('step-customer-next'));
+
+    fillDelivery();
+    fireEvent.click(screen.getByTestId('step-delivery-next'));
+
     const state = store.getState().checkout;
     expect(state.step).toBe('summary');
-    expect(state.cardToken).toBe('tok_123');
-    expect(state.card?.lastFour).toBe('4242');
     expect(state.customer?.email).toBe('cliente@test.com');
+    expect(state.delivery?.city).toBe('Bogota');
   });
 
-  it('muestra un error si la tokenización falla', async () => {
-    (tokenizeCard as jest.Mock).mockRejectedValue(
-      new TokenizationError('La tarjeta fue rechazada'),
-    );
-    const user = userEvent.setup();
+  it('muestra error si faltan datos de entrega', () => {
     render(
       <Provider store={makeStore()}>
         <PaymentModal />
       </Provider>,
     );
+    fillCustomer();
+    fireEvent.click(screen.getByTestId('step-customer-next'));
 
-    fillValidForm();
-    await user.click(screen.getByTestId('card-continue'));
-
-    expect(
-      await screen.findByText('La tarjeta fue rechazada'),
-    ).toBeInTheDocument();
-    expect(screen.getByTestId('modal-error')).toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('step-delivery-next'));
+    expect(screen.getByTestId('modal-error')).toHaveTextContent(
+      'Revisa los datos de la entrega para continuar.',
+    );
   });
 
-  it('cierra el modal y vuelve al catálogo', async () => {
-    const user = userEvent.setup();
+  it('cierra el modal y vuelve al catálogo', () => {
     const store = makeStore();
     render(
       <Provider store={store}>
@@ -178,7 +149,7 @@ describe('PaymentModal', () => {
       </Provider>,
     );
 
-    await user.click(screen.getByTestId('modal-close'));
+    fireEvent.click(screen.getByTestId('modal-close'));
     expect(store.getState().checkout.step).toBe('product');
   });
 });
