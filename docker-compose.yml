@@ -8,7 +8,7 @@ services:
       POSTGRES_PASSWORD: checkout_dev
       POSTGRES_DB: checkout_payment
     ports:
-      - '5432:5432'
+      - '5434:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -26,7 +26,7 @@ services:
       POSTGRES_PASSWORD: checkout_dev
       POSTGRES_DB: checkout_payment_test
     ports:
-      - '5433:5432'
+      - '5435:5432'
     volumes:
       - postgres_test_data:/var/lib/postgresql/data
     healthcheck:

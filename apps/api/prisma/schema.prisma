@@ -1,0 +1,112 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum TransactionStatus {
+  PENDING
+  APPROVED
+  DECLINED
+  ERROR
+  VOIDED
+}
+
+enum DeliveryStatus {
+  PENDING
+  ASSIGNED
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+model Product {
+  id           String   @id @default(uuid())
+  sku          String   @unique
+  name         String
+  description  String
+  priceInCents Int
+  currency     String   @default("COP")
+  stock        Int      @default(0)
+  imageUrl     String?
+  isActive     Boolean  @default(true)
+  version      Int      @default(1)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  transactions Transaction[]
+
+  @@index([isActive])
+}
+
+model Customer {
+  id             String   @id @default(uuid())
+  email          String   @unique
+  firstName      String
+  lastName       String
+  documentType   String
+  documentNumber String
+  phone          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  transactions Transaction[]
+  deliveries    Delivery[]
+
+  @@index([documentType, documentNumber])
+}
+
+model Delivery {
+  id            String         @id @default(uuid())
+  customerId    String
+  transactionId String?        @unique
+  addressLine1  String
+  addressLine2  String?
+  city          String
+  state         String
+  postalCode    String
+  country       String         @default("CO")
+  notes         String?
+  status        DeliveryStatus @default(PENDING)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  customer    Customer     @relation(fields: [customerId], references: [id])
+  transaction Transaction? @relation(fields: [transactionId], references: [id])
+
+  @@index([customerId])
+}
+
+model Transaction {
+  id                 String            @id @default(uuid())
+  reference          String            @unique
+  wompiTransactionId String?           @unique
+  productId          String
+  customerId         String
+  deliveryId         String?           @unique
+  amountInCents      Int
+  baseFeeInCents     Int
+  deliveryFeeInCents Int
+  totalInCents       Int
+  currency           String            @default("COP")
+  status             TransactionStatus @default(PENDING)
+  statusMessage      String?
+  paymentMethodType  String?
+  cardBrand          String?
+  cardLastFour       String?
+  customerEmail      String
+  ipAddress          String?
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+
+  product  Product   @relation(fields: [productId], references: [id])
+  customer Customer  @relation(fields: [customerId], references: [id])
+  delivery Delivery?
+
+  @@index([customerId])
+  @@index([productId])
+  @@index([status])
+}
