@@ -30,7 +30,7 @@ Aplicación de tienda online con **onboarding de pago con tarjeta de crédito** 
 | Base de datos | PostgreSQL 16 + Prisma ORM |
 | Pasarela de pagos | API sandbox (staging UAT) de la pasarela |
 | Tests | Jest (unit + e2e) con cobertura >80% |
-| Infraestructura | AWS CDK (S3 + CloudFront, ECS Fargate, RDS, Secrets Manager) |
+| Infraestructura | AWS CDK (S3 + CloudFront, Lambda + API Gateway, RDS, Secrets Manager) |
 | Contenedores | Docker Compose para PostgreSQL local |
 
 ---
@@ -322,12 +322,16 @@ Resultado de cobertura (Jest):
 
 ## Despliegue en AWS
 
-La infraestructura se define como código con **AWS CDK** en `infra/`.
+La infraestructura se define como código con **AWS CDK** en `infra/`. Está desplegada de forma real en AWS (free tier, costo ~$0/mes).
+
+**URLs públicas actuales:**
+- Frontend: `https://d3lbowayc7ghvk.cloudfront.net`
+- API Gateway: `https://m0ucyk3gdk.execute-api.us-east-2.amazonaws.com`
 
 ```
 infra/
 ├── bin/checkout-payment.ts        # entry point del app CDK
-├── lib/checkout-payment-stack.ts  # VPC, RDS, ECS Fargate, S3+CloudFront
+├── lib/checkout-payment-stack.ts  # Lambda, API Gateway, RDS, S3+CloudFront
 ├── cdk.json
 └── package.json
 ```
@@ -335,9 +339,12 @@ infra/
 | Componente | Servicio AWS | Detalle |
 |---|---|---|
 | Frontend (SPA) | **S3 + CloudFront** | Estático, HTTPS, cabeceras de seguridad, SPA fallback |
-| API (NestJS) | **ECS Fargate + ALB** | Imagen Docker multistage, health checks, logs a CloudWatch |
-| Base de datos | **RDS PostgreSQL 16** | Instancia `t4g.micro` (free tier), backups 7 días |
+| API (NestJS) | **AWS Lambda + API Gateway** | Imagen Docker, HTTPS, sin servidores |
+| Base de datos | **RDS PostgreSQL 16** (`t3.micro`) | Free tier, backups 1 día |
 | Secretos | **Secrets Manager** | Llaves de la pasarela y credenciales de la BD |
+| Presupuesto | **AWS Budgets** | Alerta de $1 para evitar cobros inesperados |
+
+**Arquitectura:** CloudFront sirve el frontend estático desde S3 y enruta `/api/*` hacia el API Gateway, que invoca la Lambda. La Lambda está **fuera de la VPC** para poder llamar a la pasarela y a Secrets Manager sin NAT (mantiene el costo ~$0). El RDS tiene acceso público con contraseña (datos de prueba) y las migraciones + seed se aplican automáticamente durante el despliegue mediante un *custom resource* de CDK.
 
 ### Pasos de despliegue
 
@@ -354,7 +361,9 @@ npm run synth
 npm run deploy
 ```
 
-Al terminar, CDK imprime la URL del frontend (`https://dxxxxxxxxxxxx.cloudfront.net`). La API queda detrás del ALB con las migraciones de Prisma aplicadas al arrancar el contenedor.
+Al terminar, CDK imprime las URLs públicas del frontend y de la API. Las migraciones y el seed de la base de datos se aplican automáticamente durante el despliegue.
+
+> **Eliminación al finalizar:** ejecuta `cdk destroy` para borrar todos los recursos de AWS y no incurrir en costos posteriores.
 
 ---
 
@@ -365,7 +374,7 @@ Prácticas alineadas con OWASP:
 - **HTTPS** en producción vía CloudFront (redirección obligatoria desde HTTP).
 - **Cabeceras de seguridad** en CloudFront: `Content-Security-Policy`, `Strict-Transport-Security`, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy`, `Permissions-Policy`.
 - **El PAN nunca toca nuestro backend**: la tarjeta se tokeniza con la llave pública directamente desde el frontend.
-- **Llaves privadas solo en el servidor** (ECS) vía Secrets Manager; nunca en el frontend ni en el repo (`.env` está en `.gitignore`).
+- **Llaves privadas solo en el servidor** (Lambda) vía Secrets Manager; nunca en el frontend ni en el repo (`.env` está en `.gitignore`).
 - **Rate limiting** global en la API (`@nestjs/throttler`).
 - **Firma de integridad** (HMAC-SHA256) en las transacciones y **verificación de firma** (`timingSafeEqual`) en el webhook.
 - **Manejo seguro de datos sensibles**: no se persisten número completo, CVC ni token de tarjeta.

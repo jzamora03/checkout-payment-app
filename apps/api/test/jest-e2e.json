@@ -10,6 +10,9 @@
   "collectCoverageFrom": [
     "src/**/*.ts",
     "!src/main.ts",
+    "!src/serverless.ts",
+    "!src/serverless-seed.ts",
+    "!src/migrate-handler.ts",
     "!src/test/**",
     "!src/**/*.spec.ts"
   ],

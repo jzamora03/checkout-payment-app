@@ -1,0 +1,19 @@
+# Imagen para la Lambda de migración/seed de Prisma (custom resource de CDK)
+
+FROM public.ecr.aws/lambda/nodejs:20 AS build
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --no-audit --no-fund
+COPY . .
+RUN npx prisma generate
+RUN npm run build
+
+FROM public.ecr.aws/lambda/nodejs:20
+WORKDIR /app
+ENV NODE_ENV=production
+COPY --from=build /app/node_modules ./node_modules
+COPY --from=build /app/dist ./dist
+COPY --from=build /app/prisma ./prisma
+COPY package*.json ./
+
+CMD ["/app/dist/src/migrate-handler.handler"]
